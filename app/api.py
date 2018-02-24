@@ -55,8 +55,8 @@ cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config
 
 
 app = Flask(__name__)
-cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:*"}})
-
+# cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:*"}})
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 @app.route('/api/version', methods=['GET'])
 @cross_origin()
@@ -77,6 +77,7 @@ def make_user_active_state_public():
     if request.headers['API-VERSION'] != config.API_VERSION:
         logging.debug('bad access version')
         abort(400)
+
     if not request.json:
         abort(400)
     if 'guid' in request.json and type(request.json['guid']) != unicode:

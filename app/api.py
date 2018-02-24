@@ -163,6 +163,37 @@ def make_user_stores_public():
     return (jsonify(return_results), 201)
 
 
+@app.route('/api/user/income', methods=['POST'])
+@cross_origin()
+def make_user_income_public():
+    if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
+        logging.debug('bad access key')
+        abort(401)
+    if request.headers['API-VERSION'] != config.API_VERSION:
+        logging.debug('bad access version')
+        abort(400)
+    if not request.json:
+        abort(400)
+    if 'guid' in request.json and type(request.json['guid']) != unicode:
+        abort(400)
+
+    guid = request.json.get('guid')
+    args = [guid,]
+
+    cursor = cnx.cursor()
+    cursor.callproc('getUserIncomeByGUID', args)
+    for result in cursor.stored_results():
+        user_incomes = result.fetchall()
+    cursor.close()
+
+    incomes_obj = {}
+    for result in user_incomes:
+        incomes_obj[result[1]] = { 'amount': result[0], 'description': result[2] }
+
+    return_results = { 'income': incomes_obj }
+    return (jsonify(return_results), 201)
+
+
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)

@@ -22,3 +22,11 @@ LISTENING_HOST = my_config.get('SERVER', 'listening_host')
 FLASK_DEBUG = my_config.getboolean('SERVER', 'flask_debug')
 
 
+###############################################################################
+# Database Options
+###############################################################################
+API_DATABASE_SERVER= my_config.get('DATABASE', 'server')
+API_DATABASE_NAME = my_config.get('DATABASE', 'database')
+API_DATABASE_USERNAME = my_config.get('DATABASE', 'username')
+API_DATABASE_PASSWORD = my_config.get('DATABASE', 'password')
+

@@ -9,3 +9,4 @@ keras==2.0.6
 numpy==1.13.1
 tensorflow==1.1.0
 h5py
+mysql-connector-python

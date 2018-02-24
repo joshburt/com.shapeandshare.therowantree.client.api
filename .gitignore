@@ -40,3 +40,5 @@ Thumbs.db
 *.dotCover
 
 *.pyc
+.idea/
+logs/

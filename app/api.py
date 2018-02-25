@@ -32,11 +32,6 @@ logging.basicConfig(
     filename="%s/%s.therowantree.api.log" % (config.LOGS_DIR, os.uname()[1])
 )
 
-cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                              host=config.API_DATABASE_SERVER,
-                              database=config.API_DATABASE_NAME,
-                              use_pure=False)
-
 # try:
 #     cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
 #                               host=config.API_DATABASE_SERVER,
@@ -86,9 +81,14 @@ def make_user_active_state_public():
     guid = request.json.get('guid')
     args = [guid, 0]
 
+    cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                  host=config.API_DATABASE_SERVER,
+                                  database=config.API_DATABASE_NAME,
+                                  use_pure=False)
     cursor = cnx.cursor()
     result_args = cursor.callproc('getUserActivityStateByGUID', args)
     cursor.close()
+    cnx.close()
     if result_args[1] is None:
         result = 0
     else:
@@ -125,9 +125,14 @@ def make_user_active_state_set_public():
         proc = None
 
     if proc is not None:
+        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                      host=config.API_DATABASE_SERVER,
+                                      database=config.API_DATABASE_NAME,
+                                      use_pure=False)
         cursor = cnx.cursor()
         cursor.callproc(proc, args)
         cursor.close()
+        cnx.close()
 
     return ('',201)
 
@@ -149,11 +154,16 @@ def make_user_stores_public():
     guid = request.json.get('guid')
     args = [guid,]
 
+    cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                  host=config.API_DATABASE_SERVER,
+                                  database=config.API_DATABASE_NAME,
+                                  use_pure=False)
     cursor = cnx.cursor()
     cursor.callproc('getUserStoresByGUID', args)
     for result in cursor.stored_results():
         user_stores = result.fetchall()
     cursor.close()
+    cnx.close()
 
     stores_obj = {}
     for result in user_stores:
@@ -180,11 +190,16 @@ def make_user_income_public():
     guid = request.json.get('guid')
     args = [guid,]
 
+    cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                  host=config.API_DATABASE_SERVER,
+                                  database=config.API_DATABASE_NAME,
+                                  use_pure=False)
     cursor = cnx.cursor()
     cursor.callproc('getUserIncomeByGUID', args)
     for result in cursor.stored_results():
         user_incomes = result.fetchall()
     cursor.close()
+    cnx.close()
 
     incomes_obj = {}
     for result in user_incomes:
@@ -201,4 +216,4 @@ def not_found(error):
 if __name__ == '__main__':
     logging.debug('starting flask app')
     app.run(debug=config.FLASK_DEBUG, host=config.LISTENING_HOST, threaded=False)
-    cnx.close()
+

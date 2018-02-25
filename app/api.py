@@ -32,36 +32,23 @@ logging.basicConfig(
     filename="%s/%s.therowantree.api.log" % (config.LOGS_DIR, os.uname()[1])
 )
 
-# try:
-#     cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-#                               host=config.API_DATABASE_SERVER,
-#                               database=config.API_DATABASE_NAME,
-#                               use_pure=False)
-#
-# except mysql.connector.Error as err:
-#   if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-#     print("Something is wrong with your user name or password")
-#   elif err.errno == errorcode.ER_BAD_DB_ERROR:
-#     print("Database does not exist")
-#   else:
-#     print(err)
-# else:
-#   cnx.close()
-
 
 app = Flask(__name__)
 # cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:*"}})
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
 
 @app.route('/api/version', methods=['GET'])
 @cross_origin()
 def make_api_version_public():
     return make_response(jsonify({'version':  str(config.API_VERSION)}), 201)
 
+
 @app.route('/health/plain', methods=['GET'])
 @cross_origin()
 def make_health_plain_public():
     return make_response('true', 201)
+
 
 @app.route('/api/user/active/state', methods=['POST'])
 @cross_origin()
@@ -81,14 +68,25 @@ def make_user_active_state_public():
     guid = request.json.get('guid')
     args = [guid, 0]
 
-    cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                  host=config.API_DATABASE_SERVER,
-                                  database=config.API_DATABASE_NAME,
-                                  use_pure=False)
-    cursor = cnx.cursor()
-    result_args = cursor.callproc('getUserActivityStateByGUID', args)
-    cursor.close()
-    cnx.close()
+    try:
+        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                      host=config.API_DATABASE_SERVER,
+                                      database=config.API_DATABASE_NAME,
+                                      use_pure=False)
+        cursor = cnx.cursor()
+        result_args = cursor.callproc('getUserActivityStateByGUID', args)
+        cursor.close()
+        cnx.close()
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+
     if result_args[1] is None:
         result = 0
     else:
@@ -125,16 +123,25 @@ def make_user_active_state_set_public():
         proc = None
 
     if proc is not None:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
-        cursor = cnx.cursor()
-        cursor.callproc(proc, args)
-        cursor.close()
-        cnx.close()
-
-    return ('',201)
+        try:
+            cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                          host=config.API_DATABASE_SERVER,
+                                          database=config.API_DATABASE_NAME,
+                                          use_pure=False)
+            cursor = cnx.cursor()
+            cursor.callproc(proc, args)
+            cursor.close()
+            cnx.close()
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                logging.debug("Something is wrong with your user name or password")
+            elif err.errno == errorcode.ER_BAD_DB_ERROR:
+                logging.debug("Database does not exist")
+            else:
+                logging.debug(err)
+        else:
+            cnx.close()
+    return ('', 201)
 
 
 @app.route('/api/user/stores', methods=['POST'])
@@ -152,24 +159,35 @@ def make_user_stores_public():
         abort(400)
 
     guid = request.json.get('guid')
-    args = [guid,]
-
-    cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                  host=config.API_DATABASE_SERVER,
-                                  database=config.API_DATABASE_NAME,
-                                  use_pure=False)
-    cursor = cnx.cursor()
-    cursor.callproc('getUserStoresByGUID', args)
-    for result in cursor.stored_results():
-        user_stores = result.fetchall()
-    cursor.close()
-    cnx.close()
-
+    args = [guid, ]
     stores_obj = {}
+    user_stores = {}
+
+    try:
+        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                      host=config.API_DATABASE_SERVER,
+                                      database=config.API_DATABASE_NAME,
+                                      use_pure=False)
+        cursor = cnx.cursor()
+        cursor.callproc('getUserStoresByGUID', args)
+        for result in cursor.stored_results():
+            user_stores = result.fetchall()
+        cursor.close()
+        cnx.close()
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+
     for result in user_stores:
         stores_obj[result[0]] = { 'amount': result[2], 'description': result[1] }
 
-    return_results = { 'stores': stores_obj }
+    return_results = {'stores': stores_obj}
     return (jsonify(return_results), 201)
 
 
@@ -189,19 +207,31 @@ def make_user_income_public():
 
     guid = request.json.get('guid')
     args = [guid,]
-
-    cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                  host=config.API_DATABASE_SERVER,
-                                  database=config.API_DATABASE_NAME,
-                                  use_pure=False)
-    cursor = cnx.cursor()
-    cursor.callproc('getUserIncomeByGUID', args)
-    for result in cursor.stored_results():
-        user_incomes = result.fetchall()
-    cursor.close()
-    cnx.close()
-
     incomes_obj = {}
+    user_incomes = {}
+
+    try:
+        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                      host=config.API_DATABASE_SERVER,
+                                      database=config.API_DATABASE_NAME,
+                                      use_pure=False)
+        cursor = cnx.cursor()
+        cursor.callproc('getUserIncomeByGUID', args)
+        for result in cursor.stored_results():
+            user_incomes = result.fetchall()
+        cursor.close()
+        cnx.close()
+
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+
     for result in user_incomes:
         incomes_obj[result[1]] = { 'amount': result[0], 'description': result[2] }
 
@@ -209,9 +239,127 @@ def make_user_income_public():
     return (jsonify(return_results), 201)
 
 
+@app.route('/api/user/create', methods=['GET'])
+@cross_origin()
+def make_user_create_public():
+    if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
+        logging.debug('bad access key')
+        abort(401)
+    if request.headers['API-VERSION'] != config.API_VERSION:
+        logging.debug('bad access version')
+        abort(400)
+
+    user_guid = {}
+    output = {}
+    try:
+        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                      host=config.API_DATABASE_SERVER,
+                                      database=config.API_DATABASE_NAME,
+                                      use_pure=False)
+        cursor = cnx.cursor()
+        cursor.callproc('createUser')
+        for result in cursor.stored_results():
+            user_guid = result.fetchall()
+        cursor.close()
+        cnx.close()
+        output = {'guid': user_guid[0][0]}
+
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+
+    return (jsonify(output), 201)
+
+
+@app.route('/api/user/create/guid', methods=['POST'])
+@cross_origin()
+def make_user_create_by_guid_public():
+    if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
+        logging.debug('bad access key')
+        abort(401)
+    if request.headers['API-VERSION'] != config.API_VERSION:
+        logging.debug('bad access version')
+        abort(400)
+    if not request.json:
+        abort(400)
+    if 'guid' in request.json and type(request.json['guid']) != unicode:
+        abort(400)
+
+    guid = request.json.get('guid')
+    args = [guid,]
+
+    try:
+        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                      host=config.API_DATABASE_SERVER,
+                                      database=config.API_DATABASE_NAME,
+                                      use_pure=False)
+        cursor = cnx.cursor()
+        cursor.callproc('createUserByGUID', args)
+        cursor.close()
+        cnx.close()
+
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+
+    return ('', 201)
+
+
+@app.route('/api/user/delete', methods=['POST'])
+@cross_origin()
+def make_user_delete_public():
+    if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
+        logging.debug('bad access key')
+        abort(401)
+    if request.headers['API-VERSION'] != config.API_VERSION:
+        logging.debug('bad access version')
+        abort(400)
+    if not request.json:
+        abort(400)
+    if 'guid' in request.json and type(request.json['guid']) != unicode:
+        abort(400)
+
+    guid = request.json.get('guid')
+    args = [guid,]
+
+    try:
+        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                      host=config.API_DATABASE_SERVER,
+                                      database=config.API_DATABASE_NAME,
+                                      use_pure=False)
+        cursor = cnx.cursor()
+        cursor.callproc('deleteUserByGUID', args)
+        cursor.close()
+        cnx.close()
+
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+
+    return ('', 201)
+
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
+
 
 if __name__ == '__main__':
     logging.debug('starting flask app')

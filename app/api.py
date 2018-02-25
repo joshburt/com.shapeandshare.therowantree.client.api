@@ -277,45 +277,95 @@ def make_user_create_public():
     return (jsonify(output), 201)
 
 
+@app.route('/api/user/feature', methods=['POST'])
+@cross_origin()
+def make_user_feature_public():
+    if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
+        logging.debug('bad access key')
+        abort(401)
+    if request.headers['API-VERSION'] != config.API_VERSION:
+        logging.debug('bad access version')
+        abort(400)
+    if not request.json:
+        abort(400)
+    if 'guid' in request.json and type(request.json['guid']) != unicode:
+        abort(400)
 
-# @app.route('/api/user/create/guid', methods=['POST'])
-# @cross_origin()
-# def make_user_create_by_guid_public():
-#     if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
-#         logging.debug('bad access key')
-#         abort(401)
-#     if request.headers['API-VERSION'] != config.API_VERSION:
-#         logging.debug('bad access version')
-#         abort(400)
-#     if not request.json:
-#         abort(400)
-#     if 'guid' in request.json and type(request.json['guid']) != unicode:
-#         abort(400)
-#
-#     guid = request.json.get('guid')
-#     args = [guid,]
-#
-#     try:
-#         cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-#                                       host=config.API_DATABASE_SERVER,
-#                                       database=config.API_DATABASE_NAME,
-#                                       use_pure=False)
-#         cursor = cnx.cursor()
-#         cursor.callproc('createUserByGUID', args)
-#         cursor.close()
-#         cnx.close()
-#
-#     except mysql.connector.Error as err:
-#         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-#             logging.debug("Something is wrong with your user name or password")
-#         elif err.errno == errorcode.ER_BAD_DB_ERROR:
-#             logging.debug("Database does not exist")
-#         else:
-#             logging.debug(err)
-#     else:
-#         cnx.close()
-#
-#     return ('', 201)
+    guid = request.json.get('guid')
+    args = [guid, ]
+    user_features = {}
+    feature_list = []
+    output = {}
+    try:
+        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                      host=config.API_DATABASE_SERVER,
+                                      database=config.API_DATABASE_NAME,
+                                      use_pure=False)
+        cursor = cnx.cursor()
+        cursor.callproc('getUserFeaturesByGUID', args)
+        for result in cursor.stored_results():
+            user_features = result.fetchall()
+        cursor.close()
+        cnx.close()
+        for feature in user_features:
+            feature_list.append(feature[0])
+        output = {'features': feature_list}
+
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+
+    return (jsonify(output), 201)
+
+
+@app.route('/api/user/active/feature', methods=['POST'])
+@cross_origin()
+def make_user_active_feature_public():
+    if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
+        logging.debug('bad access key')
+        abort(401)
+    if request.headers['API-VERSION'] != config.API_VERSION:
+        logging.debug('bad access version')
+        abort(400)
+    if not request.json:
+        abort(400)
+    if 'guid' in request.json and type(request.json['guid']) != unicode:
+        abort(400)
+
+    guid = request.json.get('guid')
+    args = [guid, ]
+    user_active_feature = {}
+    output = {}
+    try:
+        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                      host=config.API_DATABASE_SERVER,
+                                      database=config.API_DATABASE_NAME,
+                                      use_pure=False)
+        cursor = cnx.cursor()
+        cursor.callproc('getUserActiveFeatureByGUID', args)
+        for result in cursor.stored_results():
+            user_active_feature = result.fetchall()
+        cursor.close()
+        cnx.close()
+        output = {'active_feature': user_active_feature[0][0]}
+
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+
+    return (jsonify(output), 201)
 
 
 @app.route('/api/user/delete', methods=['POST'])

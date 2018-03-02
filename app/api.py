@@ -239,6 +239,51 @@ def make_user_income_public():
     return (jsonify(return_results), 201)
 
 
+@app.route('/api/user/income/set', methods=['POST'])
+@cross_origin()
+def make_user_income_set_public():
+    if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
+        logging.debug('bad access key')
+        abort(401)
+    if request.headers['API-VERSION'] != config.API_VERSION:
+        logging.debug('bad access version')
+        abort(400)
+    if not request.json:
+        abort(400)
+    if 'guid' in request.json and type(request.json['guid']) != unicode:
+        abort(400)
+    if 'income_source_name' in request.json and type(request.json['income_source_name']) != unicode:
+        abort(400)
+    if 'amount' not in request.json:
+        abort(400)
+
+    guid = request.json.get('guid')
+    income_source_name = request.json.get('income_source_name')
+    amount = int(request.json.get('amount'))
+    args = [guid, income_source_name, amount]
+
+    try:
+        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                      host=config.API_DATABASE_SERVER,
+                                      database=config.API_DATABASE_NAME,
+                                      use_pure=False)
+        cursor = cnx.cursor()
+        cursor.callproc('deltaUserIncomeByNameAndGUID', args)
+        cursor.close()
+        cnx.close()
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+
+    return ('', 201)
+
+
 @app.route('/api/user/create', methods=['GET'])
 @cross_origin()
 def make_user_create_public():

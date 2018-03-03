@@ -513,11 +513,11 @@ def make_merchant_transform_public():
         abort(400)
     if 'guid' in request.json and type(request.json['guid']) != unicode:
         abort(400)
-    if 'store_name' in request.json and type(request.json['income_source_name']) != unicode:
+    if 'store_name' in request.json and type(request.json['store_name']) != unicode:
         abort(400)
 
     guid = request.json.get('guid')
-    store_name = request.json.get('income_source_name')
+    store_name = request.json.get('store_name')
     args = [guid, store_name]
 
     try:

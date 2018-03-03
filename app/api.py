@@ -542,6 +542,50 @@ def make_merchant_transform_public():
     return ('', 201)
 
 
+@app.route('/api/user/merchants', methods=['POST'])
+@cross_origin()
+def make_user_merchant_transforms_public():
+    if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
+        logging.debug('bad access key')
+        abort(401)
+    if request.headers['API-VERSION'] != config.API_VERSION:
+        logging.debug('bad access version')
+        abort(400)
+    if not request.json:
+        abort(400)
+    if 'guid' in request.json and type(request.json['guid']) != unicode:
+        abort(400)
+
+    guid = request.json.get('guid')
+    args = [guid, ]
+    user_merchants = {}
+    merchants_obj = []
+
+    try:
+        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                      host=config.API_DATABASE_SERVER,
+                                      database=config.API_DATABASE_NAME,
+                                      use_pure=False)
+        cursor = cnx.cursor()
+        cursor.callproc('getUserMerchantTransformsByGUID', args)
+        for result in cursor.stored_results():
+            user_merchants = result.fetchall()
+        cursor.close()
+        cnx.close()
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+    for transform in user_merchants:
+        merchants_obj.append(transform[0]);
+
+    return_results = {'merchants': merchants_obj}
+    return (jsonify(return_results), 201)
 
 
 

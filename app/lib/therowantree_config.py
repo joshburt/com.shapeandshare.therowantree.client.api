@@ -1,6 +1,4 @@
 import ConfigParser
-import json
-import urllib
 
 my_config = ConfigParser.ConfigParser()
 configFilePath = r'./therowantree.config'

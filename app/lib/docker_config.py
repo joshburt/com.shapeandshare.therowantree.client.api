@@ -1,8 +1,7 @@
-# Allow over-riding the defaults with non-secure ENV varaibles, or secure docker secrets
+# Allow over-riding the defaults with non-secure ENV variables, or secure docker secrets
 
 import therowantree_config as default_config
 import os
-import json
 
 
 ###############################################################################
@@ -44,7 +43,7 @@ if 'API_DATABASE_SERVER' in os.environ:
 
 API_DATABASE_NAME = default_config.API_DATABASE_NAME
 if 'API_DATABASE_NAME' in os.environ:
-    SERVER_URI = os.environ['API_DATABASE_NAME']
+    API_DATABASE_NAME = os.environ['API_DATABASE_NAME']
 
 API_DATABASE_USERNAME = default_config.API_DATABASE_USERNAME
 if 'API_DATABASE_USERNAME' in os.environ:
@@ -52,4 +51,4 @@ if 'API_DATABASE_USERNAME' in os.environ:
 
 API_DATABASE_PASSWORD = default_config.API_DATABASE_PASSWORD
 if 'API_DATABASE_PASSWORD' in os.environ:
-    SERVER_URI = os.environ['API_DATABASE_PASSWORD']
+    API_DATABASE_PASSWORD = os.environ['API_DATABASE_PASSWORD']

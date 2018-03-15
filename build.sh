@@ -1,1 +1,1 @@
-docker build -t api .
+docker build -t trtapi .

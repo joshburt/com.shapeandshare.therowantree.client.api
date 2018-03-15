@@ -638,6 +638,6 @@ def not_found(error):
 
 if __name__ == '__main__':
     logging.debug('starting flask app')
-    app.run(debug=config.FLASK_DEBUG, host=config.LISTENING_HOST, threaded=False)
+    app.run(debug=config.FLASK_DEBUG, host=config.LISTENING_HOST, threaded=True)
     # port=80,
 

@@ -39,7 +39,7 @@ if 'FLASK_DEBUG' in os.environ:
 ###############################################################################
 API_DATABASE_SERVER = default_config.API_DATABASE_SERVER
 if 'API_DATABASE_SERVER' in os.environ:
-    API_DATABASE_SERVER = int(os.environ['API_DATABASE_SERVER'])
+    API_DATABASE_SERVER = os.environ['API_DATABASE_SERVER']
 
 API_DATABASE_NAME = default_config.API_DATABASE_NAME
 if 'API_DATABASE_NAME' in os.environ:
@@ -47,7 +47,7 @@ if 'API_DATABASE_NAME' in os.environ:
 
 API_DATABASE_USERNAME = default_config.API_DATABASE_USERNAME
 if 'API_DATABASE_USERNAME' in os.environ:
-    API_DATABASE_USERNAME = int(os.environ['API_DATABASE_USERNAME'])
+    API_DATABASE_USERNAME = os.environ['API_DATABASE_USERNAME']
 
 API_DATABASE_PASSWORD = default_config.API_DATABASE_PASSWORD
 if 'API_DATABASE_PASSWORD' in os.environ:

@@ -8,8 +8,12 @@ from flask import Flask
 from flask_cors import CORS
 from flask import Flask, jsonify, request, make_response, abort
 from flask_cors import CORS, cross_origin
+
 import mysql.connector
+from mysql.connector import pooling
 from mysql.connector import errorcode
+
+import socket, errno
 
 import lib.docker_config as config
 
@@ -36,6 +40,22 @@ logging.basicConfig(
 app = Flask(__name__)
 # cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:*"}})
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+try:
+    cnxpool = pooling.MySQLConnectionPool(pool_name = "apicnxpool",
+                                      pool_size = 32,
+                                      user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
+                                      host=config.API_DATABASE_SERVER,
+                                      database=config.API_DATABASE_NAME)
+except socket.error, e:
+    logging.debug(e)
+except mysql.connector.Error as err:
+    if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+        logging.debug("Something is wrong with your user name or password")
+    elif err.errno == errorcode.ER_BAD_DB_ERROR:
+        logging.debug("Database does not exist")
+    else:
+        logging.debug(err)
 
 
 @app.route('/api/version', methods=['GET'])
@@ -67,16 +87,14 @@ def make_user_active_state_public():
 
     guid = request.json.get('guid')
     args = [guid, 0]
-
+    result_args = None
     try:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
+        cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
         result_args = cursor.callproc('getUserActivityStateByGUID', args)
         cursor.close()
-        cnx.close()
+    except socket.error, e:
+        logging.debug(e)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             logging.debug("Something is wrong with your user name or password")
@@ -87,7 +105,7 @@ def make_user_active_state_public():
     else:
         cnx.close()
 
-    if result_args[1] is None:
+    if result_args is None or result_args[1] is None:
         result = 0
     else:
         result = result_args[1]
@@ -124,14 +142,12 @@ def make_user_active_state_set_public():
 
     if proc is not None:
         try:
-            cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                          host=config.API_DATABASE_SERVER,
-                                          database=config.API_DATABASE_NAME,
-                                          use_pure=False)
+            cnx = cnxpool.get_connection()
             cursor = cnx.cursor()
             cursor.callproc(proc, args)
             cursor.close()
-            cnx.close()
+        except socket.error, e:
+            logging.debug(e)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 logging.debug("Something is wrong with your user name or password")
@@ -164,16 +180,14 @@ def make_user_stores_public():
     user_stores = {}
 
     try:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
+        cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
         cursor.callproc('getUserStoresByGUID', args)
         for result in cursor.stored_results():
             user_stores = result.fetchall()
         cursor.close()
-        cnx.close()
+    except socket.error, e:
+        logging.debug(e)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             logging.debug("Something is wrong with your user name or password")
@@ -211,17 +225,14 @@ def make_user_income_public():
     user_incomes = {}
 
     try:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
+        cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
         cursor.callproc('getUserIncomeByGUID', args)
         for result in cursor.stored_results():
             user_incomes = result.fetchall()
         cursor.close()
-        cnx.close()
-
+    except socket.error, e:
+        logging.debug(e)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             logging.debug("Something is wrong with your user name or password")
@@ -263,14 +274,12 @@ def make_user_income_set_public():
     args = [guid, income_source_name, amount]
 
     try:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
+        cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
         cursor.callproc('deltaUserIncomeByNameAndGUID', args)
         cursor.close()
-        cnx.close()
+    except socket.error, e:
+        logging.debug(e)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             logging.debug("Something is wrong with your user name or password")
@@ -297,18 +306,15 @@ def make_user_create_public():
     user_guid = {}
     output = {}
     try:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
+        cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
         cursor.callproc('createUser')
         for result in cursor.stored_results():
             user_guid = result.fetchall()
         cursor.close()
-        cnx.close()
         output = {'guid': user_guid[0][0]}
-
+    except socket.error, e:
+        logging.debug(e)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             logging.debug("Something is wrong with your user name or password")
@@ -342,20 +348,17 @@ def make_user_feature_public():
     feature_list = []
     output = {}
     try:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
+        cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
         cursor.callproc('getUserFeaturesByGUID', args)
         for result in cursor.stored_results():
             user_features = result.fetchall()
         cursor.close()
-        cnx.close()
         for feature in user_features:
             feature_list.append(feature[0])
         output = {'features': feature_list}
-
+    except socket.error, e:
+        logging.debug(e)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             logging.debug("Something is wrong with your user name or password")
@@ -389,20 +392,17 @@ def make_user_population_public():
     user_population = 0
 
     try:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
+        cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
         cursor.callproc('getUserPopulationByGUID', args)
         for result in cursor.stored_results():
             user_population = result.fetchall()
         cursor.close()
-        cnx.close()
         if not user_population:
             user_population = 0
         population_obj = {'population': user_population}
-
+    except socket.error, e:
+        logging.debug(e)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             logging.debug("Something is wrong with your user name or password")
@@ -435,18 +435,15 @@ def make_user_active_feature_public():
     user_active_feature = {}
     output = {}
     try:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
+        cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
         cursor.callproc('getUserActiveFeatureByGUID', args)
         for result in cursor.stored_results():
             user_active_feature = result.fetchall()
         cursor.close()
-        cnx.close()
         output = {'active_feature': user_active_feature[0][0]}
-
+    except socket.error, e:
+        logging.debug(e)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             logging.debug("Something is wrong with your user name or password")
@@ -478,15 +475,12 @@ def make_user_delete_public():
     args = [guid,]
 
     try:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
+        cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
         cursor.callproc('deleteUserByGUID', args)
         cursor.close()
-        cnx.close()
-
+    except socket.error, e:
+        logging.debug(e)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             logging.debug("Something is wrong with your user name or password")
@@ -521,14 +515,12 @@ def make_merchant_transform_public():
     args = [guid, store_name]
 
     try:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
+        cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
         cursor.callproc('peformMerchantTransformByGUID', args)
         cursor.close()
-        cnx.close()
+    except socket.error, e:
+        logging.debug(e)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             logging.debug("Something is wrong with your user name or password")
@@ -562,16 +554,14 @@ def make_user_merchant_transforms_public():
     merchants_obj = []
 
     try:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
+        cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
         cursor.callproc('getUserMerchantTransformsByGUID', args)
         for result in cursor.stored_results():
             user_merchants = result.fetchall()
         cursor.close()
-        cnx.close()
+    except socket.error, e:
+        logging.debug(e)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             logging.debug("Something is wrong with your user name or password")
@@ -582,7 +572,7 @@ def make_user_merchant_transforms_public():
     else:
         cnx.close()
     for transform in user_merchants:
-        merchants_obj.append(transform[0]);
+        merchants_obj.append(transform[0])
 
     return_results = {'merchants': merchants_obj}
     return (jsonify(return_results), 201)
@@ -609,15 +599,12 @@ def make_user_transport_public():
     args = [guid, location]
 
     try:
-        cnx = mysql.connector.connect(user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
-                                      host=config.API_DATABASE_SERVER,
-                                      database=config.API_DATABASE_NAME,
-                                      use_pure=False)
+        cnx = cnxpool.get_connection()
         cursor = cnx.cursor()
         cursor.callproc('transportUserByGUID', args)
         cursor.close()
-        cnx.close()
-
+    except socket.error, e:
+        logging.debug(e)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             logging.debug("Something is wrong with your user name or password")
@@ -629,6 +616,132 @@ def make_user_transport_public():
         cnx.close()
 
     return ('', 201)
+
+
+@app.route('/api/user/state', methods=['POST'])
+@cross_origin()
+def make_user_state_public():
+    if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
+        logging.debug('bad access key')
+        abort(401)
+    if request.headers['API-VERSION'] != config.API_VERSION:
+        logging.debug('bad access version')
+        abort(400)
+    if not request.json:
+        abort(400)
+    if 'guid' in request.json and type(request.json['guid']) != unicode:
+        abort(400)
+
+    guid = request.json.get('guid')
+    args = [guid, ]
+    user_object = {}
+
+    stores_obj = {}
+    user_stores = {}
+    user_activity_state = None
+    incomes_obj = {}
+    user_incomes = {}
+    user_features = {}
+    feature_list = []
+    population_obj = {}
+    user_population = 0
+    user_active_feature = {}
+    user_merchants = {}
+    merchants_obj = []
+
+    try:
+        cnx = cnxpool.get_connection()
+        cursor = cnx.cursor()
+
+        # User Game State
+        user_activity_state = cursor.callproc('getUserActivityStateByGUID', [guid, 0])
+
+        # User Stores (Inventory)
+        cursor.callproc('getUserStoresByGUID', args)
+        for result in cursor.stored_results():
+            user_stores = result.fetchall()
+
+        # User Income
+        cursor.callproc('getUserIncomeByGUID', args)
+        for result in cursor.stored_results():
+            user_incomes = result.fetchall()
+
+        # Features
+        cursor.callproc('getUserFeaturesByGUID', args)
+        for result in cursor.stored_results():
+            user_features = result.fetchall()
+
+        # Population
+        cursor.callproc('getUserPopulationByGUID', args)
+        for result in cursor.stored_results():
+            user_population = result.fetchall()
+
+        # Active Feature
+        cursor.callproc('getUserActiveFeatureByGUID', args)
+        for result in cursor.stored_results():
+            user_active_feature = result.fetchall()
+
+        # Merchants
+        cursor.callproc('getUserMerchantTransformsByGUID', args)
+        for result in cursor.stored_results():
+            user_merchants = result.fetchall()
+
+        cursor.close()
+    except socket.error, e:
+        logging.debug(e)
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+
+
+    # Build up our response #
+
+    # User Activity Status
+    user_object['user_activity_state'] = 'Unknown'
+    if user_activity_state is None or user_activity_state[1] is None:
+        user_object[user_activity_state] = 0
+    else:
+        user_object['user_activity_state'] = user_activity_state[1]
+
+    # User Stores (Inventory)
+    for result in user_stores:
+        stores_obj[result[0]] = { 'amount': result[2], 'description': result[1] }
+    user_object['stores'] = stores_obj
+
+    # User Income
+    for result in user_incomes:
+        incomes_obj[result[1]] = { 'amount': result[0], 'description': result[2] }
+    user_object['income'] = incomes_obj
+
+    # Features
+    for feature in user_features:
+        feature_list.append(feature[0])
+    user_object['features'] = feature_list
+
+    # Population
+    if not user_population:
+        user_population = 0
+    else:
+        user_population = user_population[0][0]
+    user_object['population'] = user_population
+
+    # Active Feature
+    user_object['active_feature'] = user_active_feature[0][0]
+
+    # Merchants
+    for transform in user_merchants:
+        merchants_obj.append(transform[0])
+    user_object['merchants'] = merchants_obj
+
+    return_results = {'user': user_object}
+    return (jsonify(return_results), 201)
+
 
 
 @app.errorhandler(404)

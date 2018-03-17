@@ -43,7 +43,7 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 try:
     cnxpool = pooling.MySQLConnectionPool(pool_name = "apicnxpool",
-                                      pool_size = 60,
+                                      pool_size = 32,
                                       user=config.API_DATABASE_USERNAME, password=config.API_DATABASE_PASSWORD,
                                       host=config.API_DATABASE_SERVER,
                                       database=config.API_DATABASE_NAME)
@@ -105,7 +105,7 @@ def make_user_active_state_public():
     else:
         cnx.close()
 
-    if result_args[1] is None:
+    if result_args is None or result_args[1] is None:
         result = 0
     else:
         result = result_args[1]
@@ -572,7 +572,7 @@ def make_user_merchant_transforms_public():
     else:
         cnx.close()
     for transform in user_merchants:
-        merchants_obj.append(transform[0]);
+        merchants_obj.append(transform[0])
 
     return_results = {'merchants': merchants_obj}
     return (jsonify(return_results), 201)
@@ -616,6 +616,132 @@ def make_user_transport_public():
         cnx.close()
 
     return ('', 201)
+
+
+@app.route('/api/user/state', methods=['POST'])
+@cross_origin()
+def make_user_state_public():
+    if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
+        logging.debug('bad access key')
+        abort(401)
+    if request.headers['API-VERSION'] != config.API_VERSION:
+        logging.debug('bad access version')
+        abort(400)
+    if not request.json:
+        abort(400)
+    if 'guid' in request.json and type(request.json['guid']) != unicode:
+        abort(400)
+
+    guid = request.json.get('guid')
+    args = [guid, ]
+    user_object = {}
+
+    stores_obj = {}
+    user_stores = {}
+    user_activity_state = None
+    incomes_obj = {}
+    user_incomes = {}
+    user_features = {}
+    feature_list = []
+    population_obj = {}
+    user_population = 0
+    user_active_feature = {}
+    user_merchants = {}
+    merchants_obj = []
+
+    try:
+        cnx = cnxpool.get_connection()
+        cursor = cnx.cursor()
+
+        # User Game State
+        user_activity_state = cursor.callproc('getUserActivityStateByGUID', [guid, 0])
+
+        # User Stores (Inventory)
+        cursor.callproc('getUserStoresByGUID', args)
+        for result in cursor.stored_results():
+            user_stores = result.fetchall()
+
+        # User Income
+        cursor.callproc('getUserIncomeByGUID', args)
+        for result in cursor.stored_results():
+            user_incomes = result.fetchall()
+
+        # Features
+        cursor.callproc('getUserFeaturesByGUID', args)
+        for result in cursor.stored_results():
+            user_features = result.fetchall()
+
+        # Population
+        cursor.callproc('getUserPopulationByGUID', args)
+        for result in cursor.stored_results():
+            user_population = result.fetchall()
+
+        # Active Feature
+        cursor.callproc('getUserActiveFeatureByGUID', args)
+        for result in cursor.stored_results():
+            user_active_feature = result.fetchall()
+
+        # Merchants
+        cursor.callproc('getUserMerchantTransformsByGUID', args)
+        for result in cursor.stored_results():
+            user_merchants = result.fetchall()
+
+        cursor.close()
+    except socket.error, e:
+        logging.debug(e)
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+
+
+    # Build up our response #
+
+    # User Activity Status
+    user_object['user_activity_state'] = 'Unknown'
+    if user_activity_state is None or user_activity_state[1] is None:
+        user_object[user_activity_state] = 0
+    else:
+        user_object['user_activity_state'] = user_activity_state[1]
+
+    # User Stores (Inventory)
+    for result in user_stores:
+        stores_obj[result[0]] = { 'amount': result[2], 'description': result[1] }
+    user_object['stores'] = stores_obj
+
+    # User Income
+    for result in user_incomes:
+        incomes_obj[result[1]] = { 'amount': result[0], 'description': result[2] }
+    user_object['income'] = incomes_obj
+
+    # Features
+    for feature in user_features:
+        feature_list.append(feature[0])
+    user_object['features'] = {'features': feature_list}
+
+    # Population
+    if not user_population:
+        user_population = 0
+    else:
+        user_population = user_population[0][0]
+    user_object['population'] = user_population
+
+    # Active Feature
+    user_object['active_feature'] = user_active_feature[0][0]
+
+    # Merchants
+    for transform in user_merchants:
+        merchants_obj.append(transform[0])
+    user_object['merchants'] = merchants_obj
+
+    return_results = {'user': user_object}
+    return (jsonify(return_results), 201)
+
 
 
 @app.errorhandler(404)

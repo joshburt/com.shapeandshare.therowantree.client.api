@@ -722,7 +722,7 @@ def make_user_state_public():
     # Features
     for feature in user_features:
         feature_list.append(feature[0])
-    user_object['features'] = {'features': feature_list}
+    user_object['features'] = feature_list
 
     # Population
     if not user_population:

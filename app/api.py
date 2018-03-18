@@ -457,6 +457,60 @@ def make_user_active_feature_public():
     return (jsonify(output), 201)
 
 
+@app.route('/api/user/active/feature/details', methods=['POST'])
+@cross_origin()
+def make_user_active_feature_details_public():
+    if request.headers['API-ACCESS-KEY'] != config.API_ACCESS_KEY:
+        logging.debug('bad access key')
+        abort(401)
+    if request.headers['API-VERSION'] != config.API_VERSION:
+        logging.debug('bad access version')
+        abort(400)
+    if not request.json:
+        abort(400)
+    if 'guid' in request.json and type(request.json['guid']) != unicode:
+        abort(400)
+
+    guid = request.json.get('guid')
+    args = [guid,]
+    active_feature_state_details = {}
+    result_object = {}
+    try:
+        cnx = cnxpool.get_connection()
+        cursor = cnx.cursor()
+        cursor.callproc('getUserActiveFeatureStateDetailsByGUID', args)
+        for result in cursor.stored_results():
+            active_feature_state_details = result.fetchall()
+        cursor.close()
+
+    except socket.error, e:
+        logging.debug(e)
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            logging.debug("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            logging.debug("Database does not exist")
+        else:
+            logging.debug(err)
+    else:
+        cnx.close()
+
+    if not active_feature_state_details:
+        active_feature_state_details = {
+            'name': None,
+            'description': None
+        }
+    else:
+        details_list = active_feature_state_details[0]
+        active_feature_state_details = {
+            'name': details_list[0],
+            'description': details_list[1]
+        }
+
+    result_object['active_feature_state_details'] = active_feature_state_details
+    return (jsonify(result_object), 201)
+
+
 @app.route('/api/user/delete', methods=['POST'])
 @cross_origin()
 def make_user_delete_public():
@@ -648,6 +702,7 @@ def make_user_state_public():
     user_active_feature = {}
     user_merchants = {}
     merchants_obj = []
+    active_feature_state_details = {}
 
     try:
         cnx = cnxpool.get_connection()
@@ -680,6 +735,11 @@ def make_user_state_public():
         cursor.callproc('getUserActiveFeatureByGUID', args)
         for result in cursor.stored_results():
             user_active_feature = result.fetchall()
+
+        # Active Feature Details
+        cursor.callproc('getUserActiveFeatureStateDetailsByGUID', args)
+        for result in cursor.stored_results():
+            active_feature_state_details = result.fetchall()
 
         # Merchants
         cursor.callproc('getUserMerchantTransformsByGUID', args)
@@ -733,6 +793,19 @@ def make_user_state_public():
 
     # Active Feature
     user_object['active_feature'] = user_active_feature[0][0]
+
+    # Active Feature Details
+    if not active_feature_state_details:
+        active_feature_state_details = {
+            'name': None,
+            'description': None
+        }
+    else:
+        active_feature_state_details = {
+            'name': active_feature_state_details[0][0],
+            'description': active_feature_state_details[0][1]
+        }
+    user_object['active_feature_state_details'] = active_feature_state_details
 
     # Merchants
     for transform in user_merchants:

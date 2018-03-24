@@ -1,1 +1,1 @@
-docker build -t trtapi .
+docker build -t trt_client_api .

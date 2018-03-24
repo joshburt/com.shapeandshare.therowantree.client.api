@@ -1,9 +1,9 @@
-# The Rowan Tree API
+# The Rowan Tree Client API
                Bless all forms of intelligence.
 
 Overview
 --------
-Currently only the client API is exposed within the API layer.
+API for client interface consumption.
 
 Deployment
 ----------
@@ -18,7 +18,7 @@ Create the docker container using the build script 'build.sh'.
 
 Launch the container:
 ```
-docker run -p 5000:80 --env API_DATABASE_SERVER='172.16.0.110' --env API_DATABASE_NAME='dev_trt' trtapi
+docker run -p 5000:80 --env API_DATABASE_SERVER='1727.0.0.1' --env API_DATABASE_NAME='dev_trt' trt_client_api
 ```
 
 Consumption

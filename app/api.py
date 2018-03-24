@@ -33,7 +33,7 @@ logging.basicConfig(
     datefmt='%m/%d/%Y %I:%M:%S %p',
     level=logging.DEBUG,
     filemode='w',
-    filename="%s/%s.therowantree.api.log" % (config.LOGS_DIR, os.uname()[1])
+    filename="%s/%s.therowantree.client.api.log" % (config.LOGS_DIR, os.uname()[1])
 )
 
 

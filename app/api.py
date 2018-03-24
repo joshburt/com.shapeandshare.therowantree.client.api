@@ -703,6 +703,8 @@ def make_user_state_public():
     user_merchants = {}
     merchants_obj = []
     active_feature_state_details = {}
+    user_notifications = {}
+    note_obj = []
 
     try:
         cnx = cnxpool.get_connection()
@@ -745,6 +747,11 @@ def make_user_state_public():
         cursor.callproc('getUserMerchantTransformsByGUID', args)
         for result in cursor.stored_results():
             user_merchants = result.fetchall()
+
+        # Notifications
+        cursor.callproc('getUserNotificationByGUID', args)
+        for result in cursor.stored_results():
+            user_notifications = result.fetchall()
 
         cursor.close()
     except socket.error, e:
@@ -811,6 +818,14 @@ def make_user_state_public():
     for transform in user_merchants:
         merchants_obj.append(transform[0])
     user_object['merchants'] = merchants_obj
+
+    # User Notifications
+    for notification in user_notifications:
+        note_obj.append(notification)
+        # note_obj.append(notification[2])
+    user_object['notifications'] = note_obj
+
+
 
     return_results = {'user': user_object}
     return (jsonify(return_results), 201)

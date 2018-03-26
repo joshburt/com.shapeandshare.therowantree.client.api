@@ -18,7 +18,7 @@ Create the docker container using the build script 'build.sh'.
 
 Launch the container:
 ```
-docker run -p 5000:80 --env API_DATABASE_SERVER='1727.0.0.1' --env API_DATABASE_NAME='dev_trt' trt_client_api
+docker run -p 5000:80 --env API_DATABASE_SERVER='127.0.0.1' --env API_DATABASE_NAME='dev_trt' trt_client_api
 ```
 
 Consumption

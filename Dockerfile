@@ -1,5 +1,5 @@
-# https://hub.docker.com/r/tiangolo/uwsgi-nginx/
-FROM tiangolo/uwsgi-nginx:python2.7
+# hhttps://hub.docker.com/r/tiangolo/uwsgi-nginx-flask/
+FROM tiangolo/uwsgi-nginx-flask:python2.7
 
 WORKDIR /app
 

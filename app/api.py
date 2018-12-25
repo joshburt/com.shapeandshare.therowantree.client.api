@@ -67,7 +67,7 @@ def make_api_version_public():
 @app.route('/health/plain', methods=['GET'])
 @cross_origin()
 def make_health_plain_public():
-    return make_response('true', 201)
+    return make_response('true', 200)
 
 
 @app.route('/api/user/active/state', methods=['POST'])

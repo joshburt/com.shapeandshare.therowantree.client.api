@@ -12,7 +12,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public string EventTitle { get; set; }
         public string EventDescription { get; set; }
 
-        public FeatureType ActiveFeature { get; set; }
-        public FeatureState ActiveFeatureNavigation { get; set; }
+        public virtual FeatureType ActiveFeature { get; set; }
+        public virtual FeatureState ActiveFeatureNavigation { get; set; }
     }
 }

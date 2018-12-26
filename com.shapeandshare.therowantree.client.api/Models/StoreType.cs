@@ -17,10 +17,10 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public string StoreName { get; set; }
         public string StoreDescription { get; set; }
 
-        public Trapdrop Trapdrop { get; set; }
-        public ICollection<IncomeSource> IncomeSource { get; set; }
-        public ICollection<MerchantTransforms> MerchantTransformsFromStore { get; set; }
-        public ICollection<MerchantTransforms> MerchantTransformsToStore { get; set; }
-        public ICollection<Store> Store { get; set; }
+        public virtual Trapdrop Trapdrop { get; set; }
+        public virtual ICollection<IncomeSource> IncomeSource { get; set; }
+        public virtual ICollection<MerchantTransforms> MerchantTransformsFromStore { get; set; }
+        public virtual ICollection<MerchantTransforms> MerchantTransformsToStore { get; set; }
+        public virtual ICollection<Store> Store { get; set; }
     }
 }

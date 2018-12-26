@@ -16,9 +16,9 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public int FeatureId { get; set; }
         public string FeatureName { get; set; }
 
-        public ICollection<EventType> EventType { get; set; }
-        public ICollection<Feature> Feature { get; set; }
-        public ICollection<FeatureState> FeatureState { get; set; }
-        public ICollection<UserGameState> UserGameState { get; set; }
+        public virtual ICollection<EventType> EventType { get; set; }
+        public virtual ICollection<Feature> Feature { get; set; }
+        public virtual ICollection<FeatureState> FeatureState { get; set; }
+        public virtual ICollection<UserGameState> UserGameState { get; set; }
     }
 }

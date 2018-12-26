@@ -9,7 +9,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public int UserId { get; set; }
         public int FeatureId { get; set; }
 
-        public FeatureType FeatureNavigation { get; set; }
-        public User User { get; set; }
+        public virtual FeatureType FeatureNavigation { get; set; }
+        public virtual User User { get; set; }
     }
 }

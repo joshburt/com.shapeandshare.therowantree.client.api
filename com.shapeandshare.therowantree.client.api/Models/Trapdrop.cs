@@ -9,6 +9,6 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public double RollUnder { get; set; }
         public string Message { get; set; }
 
-        public StoreType Store { get; set; }
+        public virtual StoreType Store { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public int IncomeSourceId { get; set; }
         public int Amount { get; set; }
 
-        public IncomeSourceType IncomeSource { get; set; }
-        public User User { get; set; }
+        public virtual IncomeSourceType IncomeSource { get; set; }
+        public virtual User User { get; set; }
     }
 }

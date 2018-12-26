@@ -10,6 +10,6 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public int FeatureId { get; set; }
         public int FeatureIndex { get; set; }
 
-        public User User { get; set; }
+        public virtual User User { get; set; }
     }
 }

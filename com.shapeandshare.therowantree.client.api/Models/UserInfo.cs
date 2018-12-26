@@ -11,6 +11,6 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public string Password { get; set; }
         public DateTimeOffset CreateTime { get; set; }
 
-        public User User { get; set; }
+        public virtual User User { get; set; }
     }
 }

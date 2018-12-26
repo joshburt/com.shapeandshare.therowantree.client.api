@@ -15,6 +15,6 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public string PerkDescription { get; set; }
         public string PerkNotify { get; set; }
 
-        public ICollection<Perk> Perk { get; set; }
+        public virtual ICollection<Perk> Perk { get; set; }
     }
 }

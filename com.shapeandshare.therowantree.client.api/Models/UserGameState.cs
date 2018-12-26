@@ -11,8 +11,8 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public int GameFireStateId { get; set; }
         public int BuilderLevel { get; set; }
 
-        public FeatureType ActiveFeatureNavigation { get; set; }
-        public FireType GameFireState { get; set; }
-        public TemperatureType GameTemperature { get; set; }
+        public virtual FeatureType ActiveFeatureNavigation { get; set; }
+        public virtual FireType GameFireState { get; set; }
+        public virtual TemperatureType GameTemperature { get; set; }
     }
 }

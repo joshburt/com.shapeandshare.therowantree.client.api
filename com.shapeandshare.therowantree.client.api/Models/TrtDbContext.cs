@@ -41,12 +41,14 @@ namespace com.shapeandshare.therowantree.client.api.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseMySQL("server=localhost;port=3306;user=root;password=##PASSWORD##;database=trt_dev");
+                optionsBuilder.UseMySQL("server=localhost;port=3306;user=root;password=1ZHvG9leSgJdOvFZR1PkXSOo6xrPCNrNC1q6EWp1YUOnEERNkFdrXzNnW2k3SAf;database=trt_dev");
             }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.HasAnnotation("ProductVersion", "2.2.0-rtm-35687");
+
             modelBuilder.Entity<EventType>(entity =>
             {
                 entity.HasKey(e => e.EventId);
@@ -718,7 +720,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
                     .HasConstraintName("fk_game_fire_state_id_user_game_state_fire_type");
 
                 entity.HasOne(d => d.GameTemperature)
-                    .WithMany(p => p.UserGameState)
+                    .WithMany(p => p.GetUserGameState())
                     .HasForeignKey(d => d.GameTemperatureId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_game_temperature_id_user_game_state_temperature_type");

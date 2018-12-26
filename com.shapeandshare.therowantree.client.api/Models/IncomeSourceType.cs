@@ -15,7 +15,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public string IncomeSourceName { get; set; }
         public string IncomeSourceDescription { get; set; }
 
-        public ICollection<IncomeSource> IncomeSource { get; set; }
-        public ICollection<UserIncome> UserIncome { get; set; }
+        public virtual ICollection<IncomeSource> IncomeSource { get; set; }
+        public virtual ICollection<UserIncome> UserIncome { get; set; }
     }
 }

@@ -20,12 +20,12 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public byte? Active { get; set; }
         public int Population { get; set; }
 
-        public UserInfo UserInfo { get; set; }
-        public ICollection<Feature> Feature { get; set; }
-        public ICollection<Perk> Perk { get; set; }
-        public ICollection<Store> Store { get; set; }
-        public ICollection<UserFeatureState> UserFeatureState { get; set; }
-        public ICollection<UserIncome> UserIncome { get; set; }
-        public ICollection<UserNotification> UserNotification { get; set; }
+        public virtual UserInfo UserInfo { get; set; }
+        public virtual ICollection<Feature> Feature { get; set; }
+        public virtual ICollection<Perk> Perk { get; set; }
+        public virtual ICollection<Store> Store { get; set; }
+        public virtual ICollection<UserFeatureState> UserFeatureState { get; set; }
+        public virtual ICollection<UserIncome> UserIncome { get; set; }
+        public virtual ICollection<UserNotification> UserNotification { get; set; }
     }
 }

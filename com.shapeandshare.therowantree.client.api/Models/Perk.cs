@@ -9,7 +9,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public int UserId { get; set; }
         public int PerkId { get; set; }
 
-        public PerkType PerkNavigation { get; set; }
-        public User User { get; set; }
+        public virtual PerkType PerkNavigation { get; set; }
+        public virtual User User { get; set; }
     }
 }

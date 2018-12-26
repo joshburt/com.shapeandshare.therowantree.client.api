@@ -1,6 +1,6 @@
 ﻿Built with:
 dotnet ef dbcontext scaffold \
-"server=localhost;port=3306;user=root;password=##PASSWORD##;database=trt_dev" \
+"server=localhost;port=3306;user=root;password=1ZHvG9leSgJdOvFZR1PkXSOo6xrPCNrNC1q6EWp1YUOnEERNkFdrXzNnW2k3SAf;database=trt_dev" \
 MySql.Data.EntityFrameworkCore \
 --context TrtDbContext \
 --output-dir Models \

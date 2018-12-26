@@ -14,6 +14,6 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public string TemperatureName { get; set; }
         public string TemperatureDescription { get; set; }
 
-        public ICollection<UserGameState> UserGameState { get; set; }
+        public virtual ICollection<UserGameState> UserGameState { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public int FromStoreId { get; set; }
         public int Amount { get; set; }
 
-        public StoreType FromStore { get; set; }
-        public StoreType ToStore { get; set; }
+        public virtual StoreType FromStore { get; set; }
+        public virtual StoreType ToStore { get; set; }
     }
 }

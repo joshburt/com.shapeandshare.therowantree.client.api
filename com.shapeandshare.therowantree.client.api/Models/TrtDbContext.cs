@@ -720,7 +720,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
                     .HasConstraintName("fk_game_fire_state_id_user_game_state_fire_type");
 
                 entity.HasOne(d => d.GameTemperature)
-                    .WithMany(p => p.GetUserGameState())
+                    .WithMany(p => p.UserGameState)
                     .HasForeignKey(d => d.GameTemperatureId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_game_temperature_id_user_game_state_temperature_type");

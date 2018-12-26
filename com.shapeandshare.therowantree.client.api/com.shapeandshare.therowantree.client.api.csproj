@@ -10,6 +10,40 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="MySql.Data.EntityFrameworkCore" Version="8.0.13" />
+    <PackageReference Include="MySql.Data.EntityFrameworkCore.Design" Version="8.0.13" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="trt\EventType.cs" />
+    <Compile Remove="trt\FeatureState.cs" />
+    <Compile Remove="trt\FeatureType.cs" />
+    <Compile Remove="trt\FireType.cs" />
+    <Compile Remove="trt\IncomeSourceType.cs" />
+    <Compile Remove="trt\PerkType.cs" />
+    <Compile Remove="trt\StoreType.cs" />
+    <Compile Remove="trt\TemperatureType.cs" />
+    <Compile Remove="trt\Trapdrop.cs" />
+    <Compile Remove="trt\User.cs" />
+    <Compile Remove="trt\UserGameState.cs" />
+    <Compile Remove="trt\UserInfo.cs" />
+    <Compile Remove="trt\UserNotification.cs" />
+    <Compile Remove="trt\trt_devContext.cs" />
+    <Compile Remove="Models\EventType.cs" />
+    <Compile Remove="Models\Feature.cs" />
+    <Compile Remove="Models\FeatureState.cs" />
+    <Compile Remove="Models\FeatureType.cs" />
+    <Compile Remove="Models\FireType.cs" />
+    <Compile Remove="Models\IncomeSource.cs" />
+    <Compile Remove="Models\TrtDb.cs" />
+    <Compile Remove="Models\User.cs" />
+    <Compile Remove="Models\UserFeatureState.cs" />
+    <Compile Remove="Models\UserGameState.cs" />
+    <Compile Remove="Models\UserIncome.cs" />
+    <Compile Remove="Models\UserInfo.cs" />
+    <Compile Remove="Models\UserNotification.cs" />
+    <Compile Remove="Models\IncomeSourceType.cs" />
+    <Compile Remove="Models\MerchantTransforms.cs" />
+    <Compile Remove="Models\Perk.cs" />
+  </ItemGroup>
 </Project>

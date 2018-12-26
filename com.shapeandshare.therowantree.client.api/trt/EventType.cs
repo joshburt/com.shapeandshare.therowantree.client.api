@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace com.shapeandshare.therowantree.client.api.trt
+{
+    public partial class EventType
+    {
+        public int EventId { get; set; }
+        public int ActiveFeatureId { get; set; }
+        public int FeatureStateId { get; set; }
+        public string EventName { get; set; }
+        public string EventTitle { get; set; }
+        public string EventDescription { get; set; }
+
+        public FeatureType ActiveFeature { get; set; }
+        public FeatureState ActiveFeatureNavigation { get; set; }
+    }
+}

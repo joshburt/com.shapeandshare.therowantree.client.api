@@ -3,17 +3,15 @@
 import errno
 import logging
 import os
+import socket
 
-from flask import Flask
-from flask_cors import CORS
 from flask import Flask, jsonify, request, make_response, abort
 from flask_cors import CORS, cross_origin
 
 import mysql.connector
-from mysql.connector import pooling
-from mysql.connector import errorcode
+from mysql.connector import pooling, errorcode
 
-import socket, errno
+
 
 import lib.docker_config as config
 

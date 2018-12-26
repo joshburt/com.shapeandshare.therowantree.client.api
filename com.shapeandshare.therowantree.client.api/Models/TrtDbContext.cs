@@ -41,7 +41,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseMySQL("server=localhost;port=3306;user=root;password=1ZHvG9leSgJdOvFZR1PkXSOo6xrPCNrNC1q6EWp1YUOnEERNkFdrXzNnW2k3SAf;database=trt_dev");
+                optionsBuilder.UseMySQL("server=localhost;port=3306;user=root;password=##PASSWORD##;database=trt_dev");
             }
         }
 

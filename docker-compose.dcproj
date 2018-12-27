@@ -5,7 +5,7 @@
     <DockerTargetOS>Linux</DockerTargetOS>
     <ProjectGuid>{7B5754BA-678F-447A-BD28-AC2776BB3528}</ProjectGuid>
     <DockerLaunchBrowser>True</DockerLaunchBrowser>
-    <DockerServiceUrl>http://localhost:{ServicePort}/api/values</DockerServiceUrl>
+    <DockerServiceUrl>http://localhost:{ServicePort}/health</DockerServiceUrl>
     <DockerServiceName>com.shapeandshare.therowantree.client.api</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>

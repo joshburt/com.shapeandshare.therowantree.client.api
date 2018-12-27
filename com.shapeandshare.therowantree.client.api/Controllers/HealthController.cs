@@ -20,16 +20,18 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
             _context = context;
         }
 
-        // GET: api/values
+        // GET: health
+        [Route("")]
         [HttpGet]
         public IEnumerable<string> Get()
         {
             return new string[] { "health", "true" };
         }
 
-        // GET api/values/5
-        [HttpGet("plain")]
-        public string Get(int id)
+        // GET /health/plain
+        [Route("plain")]
+        [HttpGet]
+        public string GetHealthPlain()
         {
             return "true";
         }

@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  com.shapeandshare.therowantree.client.api:
+    image: ${DOCKER_REGISTRY-}comshapeandsharetherowantreeclient
+    build:
+      context: .
+      dockerfile: com.shapeandshare.therowantree.client.api/Dockerfile

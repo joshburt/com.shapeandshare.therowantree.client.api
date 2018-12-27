@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.shapeandshare.therowantree.client.api", "com.shapeandshare.therowantree.client.api\com.shapeandshare.therowantree.client.api.csproj", "{78204E2E-9963-4511-8167-72D7306D680E}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{7B5754BA-678F-447A-BD28-AC2776BB3528}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,5 +15,9 @@ Global
 		{78204E2E-9963-4511-8167-72D7306D680E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78204E2E-9963-4511-8167-72D7306D680E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78204E2E-9963-4511-8167-72D7306D680E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B5754BA-678F-447A-BD28-AC2776BB3528}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B5754BA-678F-447A-BD28-AC2776BB3528}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B5754BA-678F-447A-BD28-AC2776BB3528}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B5754BA-678F-447A-BD28-AC2776BB3528}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

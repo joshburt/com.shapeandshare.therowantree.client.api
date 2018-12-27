@@ -4,12 +4,21 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
+using com.shapeandshare.therowantree.client.api.Models;
+
 namespace com.shapeandshare.therowantree.client.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase
     {
+        private readonly TrtDbContext _context;
+
+        public ValuesController(TrtDbContext context)
+        {
+            _context = context;
+        }
+
         // GET api/values
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()

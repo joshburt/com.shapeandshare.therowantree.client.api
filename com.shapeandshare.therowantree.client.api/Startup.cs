@@ -28,7 +28,9 @@ namespace com.shapeandshare.therowantree.client.api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            // Add the whole configuration object here.
+            services.AddSingleton<IConfiguration>(Configuration);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddDbContext<TrtDbContext>(options => 
                 options.UseMySQL(Configuration.GetConnectionString("DefaultConnection")));
         }

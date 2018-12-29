@@ -1,11 +1,11 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 namespace com.shapeandshare.therowantree.client.api.Controllers
 {
-    [Route("[controller]")]
-    public class VersionController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class VersionController : ControllerBase
     {
         public readonly string _version;
 
@@ -14,7 +14,7 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
             _version = config.GetValue<string>("API_VERSION");
         }
 
-        // GET: /version
+        // GET: /api/version
         [Route("")]
         [HttpGet]
         public string Get()

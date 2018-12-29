@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
-using System.Configuration;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
 namespace com.shapeandshare.therowantree.client.api.Models
@@ -21,14 +22,24 @@ namespace com.shapeandshare.therowantree.client.api.Models
             allHealthy = true;
 
             databaseStatus = new Hashtable();
+            databaseStatus["DefaultConnection"] = "Unknown";
+            UpdateDbContextStatus(DbContextStatus());
+        }
 
-            string conString = Microsoft
-            .Extensions
-            .Configuration
-            .ConfigurationExtensions
-            .GetConnectionString(_configuration, "DefaultConnection");
+        private async Task<bool> DbContextStatus() {
+            return await _context.Database.CanConnectAsync();
+        }
 
-            databaseStatus["database"] = conString;
+        private void UpdateDbContextStatus(Task t) {
+            try
+            {
+                t.Wait();
+                databaseStatus["DefaultConnection"] = t.ToString();
+            }
+            catch(Exception e)
+            {
+                databaseStatus["DefaultConnection"] = e.Message.ToString();
+            }
         }
     }
 }

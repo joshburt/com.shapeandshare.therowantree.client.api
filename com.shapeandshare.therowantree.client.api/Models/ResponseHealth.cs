@@ -9,6 +9,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
     {
         public readonly bool allHealthy;
         public readonly IDictionary databaseStatus;
+
         private readonly TrtDbContext _context;
         private readonly IConfiguration _configuration;
 
@@ -25,7 +26,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
             .Extensions
             .Configuration
             .ConfigurationExtensions
-            .GetConnectionString(this._configuration, "DefaultConnection");
+            .GetConnectionString(_configuration, "DefaultConnection");
 
             databaseStatus["database"] = conString;
         }

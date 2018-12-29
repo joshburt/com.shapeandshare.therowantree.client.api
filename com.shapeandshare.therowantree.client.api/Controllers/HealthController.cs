@@ -23,12 +23,11 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
             _response = new ResponseHealth(_context, config);
         }
 
-        // GET: health
+        // GET: /health
         [Route("")]
         [HttpGet]
         public JsonResult Get()
         {
-
             return Json(_response);
         }
 
@@ -37,7 +36,7 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
         [HttpGet]
         public string GetHealthPlain()
         {
-            return "true";
+            return _response.allHealthy.ToString().ToLower();
         }
     }
 }

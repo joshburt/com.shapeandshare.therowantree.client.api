@@ -15,7 +15,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
         // public readonly User dataSample;
 
         private TrtDbContext _context;
-        private readonly IConfiguration _configuration;
+        // private readonly IConfiguration _configuration;
 
         public struct DBDetails
         {
@@ -26,7 +26,7 @@ namespace com.shapeandshare.therowantree.client.api.Models
         public ResponseHealth(TrtDbContext context, IConfiguration config)
         {
             _context = context;
-            _configuration = config;
+            // _configuration = config;
 
             allHealthy = false;
 

@@ -28,7 +28,6 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
         [HttpGet]
         public JsonResult Get()
         {
-
             return Json(_response);
         }
 

@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-
-using com.shapeandshare.therowantree.client.api.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using com.shapeandshare.therowantree.client.api.Models;
 
 namespace com.shapeandshare.therowantree.client.api.Controllers
 {
     [Route("[controller]")]
-    public class HealthController : Controller
+    [ApiController]
+    public class HealthController : ControllerBase
     {
         private readonly TrtDbContext _context;
         private readonly ResponseHealth _response;
@@ -26,9 +21,9 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
         // GET: /health
         [Route("")]
         [HttpGet]
-        public JsonResult Get()
+        public ResponseHealth Get()
         {
-            return Json(_response);
+            return _response;
         }
 
         // GET /health/plain

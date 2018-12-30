@@ -28,13 +28,15 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
 
             try
             {
+                // Create the user to get the user_id primary key
                 newUser = new User
                 {
                     Guid = _guid.ToString()
                 };
                 _context.User.Add(newUser);
-                _context.SaveChanges();
+                _context.SaveChanges(); // .. and commit
 
+                // Create default user feature
                 Feature newFeature = new Feature
                 {
                     UserId = newUser.UserId,
@@ -42,6 +44,7 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
                 };
                 _context.Feature.Add(newFeature);
 
+                // Set default user game state
                 UserGameState newUserGameState = new UserGameState
                 {
                     UserId = newUser.UserId,
@@ -52,7 +55,16 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
                 };
                 _context.UserGameState.Add(newUserGameState);
 
-                _context.SaveChanges();
+                // Set default user feature state
+                UserFeatureState newUserFeatureState = new UserFeatureState
+                { 
+                    UserId = newUser.UserId,
+                    FeatureId = 1,
+                    FeatureIndex = 1
+                };
+                _context.UserFeatureState.Add(newUserFeatureState);
+
+                _context.SaveChanges(); // .. and commit
             }
             catch (Exception e)
             {

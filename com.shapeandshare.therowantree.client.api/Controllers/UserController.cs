@@ -34,44 +34,14 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
                 };
                 _context.User.Add(newUser);
                 _context.SaveChanges();
-             }
-            catch (Exception e) {
-                // TODO: log exception.
-                return BadRequest(new ResponseUserCreate 
-                    {
-                        Guid = _guid,
-                        Message=new string[] { 
-                            "Unable to create user.",
-                            e.InnerException.Message 
-                        } 
-                    });
-            }
 
-            try
-            {
                 Feature newFeature = new Feature
                 {
                     UserId = newUser.UserId,
-                    FeatureId = _context.FeatureType.FirstOrDefault(ft => ft.FeatureId == 1).FeatureId
+                    FeatureId = 1
                 };
                 _context.Feature.Add(newFeature);
-                _context.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                // TODO: log exception.
-                return BadRequest(new ResponseUserCreate 
-                    { 
-                        Guid = _guid, 
-                        Message = new string[] {
-                            String.Format("Unable to add features to new user, userid:({0}).", newUser.UserId),
-                            e.InnerException.Message
-                        } 
-                    });
-            }
 
-            try
-            {
                 UserGameState newUserGameState = new UserGameState
                 {
                     UserId = newUser.UserId,
@@ -81,22 +51,21 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
                     BuilderLevel = -1
                 };
                 _context.UserGameState.Add(newUserGameState);
-                _context.SaveChanges();
 
+                _context.SaveChanges();
             }
             catch (Exception e)
             {
                 // TODO: log exception.
-                return BadRequest(new ResponseUserCreate 
-                    { 
-                        Guid = _guid, 
-                        Message = new string[] {
-                            String.Format("Unable to add game state to new user, userid:({0}).", newUser.UserId),
-                            e.InnerException.Message 
-                        } 
-                    });
+                return BadRequest(new ResponseUserCreate
+                {
+                    Guid = _guid,
+                    Message = new string[] {
+                            "Unable to commit changes. :(",
+                            e.InnerException.Message
+                        }
+                });
             }
-
 
             return Created(_guid.ToString(), new ResponseUserCreate 
                 { 

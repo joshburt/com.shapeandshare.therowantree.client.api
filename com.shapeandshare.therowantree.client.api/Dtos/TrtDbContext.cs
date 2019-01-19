@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace com.shapeandshare.therowantree.client.api.Models
+namespace com.shapeandshare.therowantree.client.api.Dtos
 {
     public partial class TrtDbContext : DbContext
     {

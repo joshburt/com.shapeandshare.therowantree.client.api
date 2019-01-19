@@ -1,19 +1,17 @@
 ﻿using System;
-using Microsoft.AspNetCore.Mvc;
-
 using com.shapeandshare.therowantree.client.api.Dtos;
 using com.shapeandshare.therowantree.client.api.Models;
-using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 
 namespace com.shapeandshare.therowantree.client.api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class CreateController : ControllerBase
     {
         private readonly TrtDbContext _context;
 
-        public UserController(TrtDbContext context)
+        public CreateController(TrtDbContext context)
         {
             _context = context;
         }
@@ -21,7 +19,7 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
         [HttpGet]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        [Route("create")]
+        [Route("")]
         public IActionResult UserCreate()
         {
             Guid _guid = Guid.NewGuid();
@@ -58,7 +56,7 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
 
                 // Set default user feature state
                 UserFeatureState newUserFeatureState = new UserFeatureState
-                { 
+                {
                     UserId = newUser.UserId,
                     FeatureId = 1,
                     FeatureIndex = 1
@@ -80,13 +78,11 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
                 });
             }
 
-            return Created(_guid.ToString(), new ResponseUserCreate 
-                { 
-                    Guid = _guid, 
-                    Message = new string[] { }
-                });
+            return Created(_guid.ToString(), new ResponseUserCreate
+            {
+                Guid = _guid,
+                Message = new string[] { }
+            });
         }
-
-
     }
 }

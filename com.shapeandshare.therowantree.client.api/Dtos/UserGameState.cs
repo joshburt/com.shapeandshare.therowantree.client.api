@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace com.shapeandshare.therowantree.client.api.Models
+namespace com.shapeandshare.therowantree.client.api.Dtos
 {
     public partial class UserGameState
     {

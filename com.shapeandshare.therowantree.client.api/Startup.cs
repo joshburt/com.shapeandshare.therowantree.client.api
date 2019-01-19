@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using com.shapeandshare.therowantree.client.api.Models;
+using com.shapeandshare.therowantree.client.api.Dtos;
 
 namespace com.shapeandshare.therowantree.client.api
 {

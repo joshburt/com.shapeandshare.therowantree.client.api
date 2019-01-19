@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-using com.shapeandshare.therowantree.client.api.Models;
+using com.shapeandshare.therowantree.client.api.Dtos;
 
 namespace com.shapeandshare.therowantree.client.api.Controllers
 {

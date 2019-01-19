@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
+using com.shapeandshare.therowantree.client.api.Dtos;
 using com.shapeandshare.therowantree.client.api.Models;
 
 namespace com.shapeandshare.therowantree.client.api.Controllers

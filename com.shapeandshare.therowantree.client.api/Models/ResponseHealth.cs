@@ -5,6 +5,7 @@ using System.Collections;
 using System.Threading.Tasks;
 //using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using com.shapeandshare.therowantree.client.api.Dtos;
 
 namespace com.shapeandshare.therowantree.client.api.Models
 {

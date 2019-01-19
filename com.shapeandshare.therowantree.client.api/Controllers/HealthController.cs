@@ -11,12 +11,12 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
     public class HealthController : ControllerBase
     {
         private readonly TrtDbContext _context;
-        private readonly ResponseHealth _response;
+        private readonly IConfiguration _config;
 
         public HealthController(TrtDbContext context, IConfiguration config)
         {
             _context = context;
-            _response = new ResponseHealth(_context, config);
+            _config = config;
         }
 
         // GET: /health
@@ -24,7 +24,7 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
         [HttpGet]
         public ResponseHealth Get()
         {
-            return _response;
+            return new ResponseHealth(_context, _config);
         }
 
         // GET /health/plain
@@ -32,7 +32,7 @@ namespace com.shapeandshare.therowantree.client.api.Controllers
         [HttpGet]
         public string GetHealthPlain()
         {
-            return _response.allHealthy.ToString().ToLower();
+            return new ResponseHealth(_context, _config).allHealthy.ToString().ToLower();
         }
     }
 }

@@ -1,10 +1,5 @@
-import logging
-from typing import Any
-
-from ..contracts.user_active_get_response import UserActiveGetResponse
 from ..contracts.user_active_set_request import UserActiveSetRequest
 from ..db.dao import DBDAO
-from ..db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController
 
 

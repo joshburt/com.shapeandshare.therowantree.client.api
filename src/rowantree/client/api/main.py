@@ -1,11 +1,9 @@
 import logging
 import os
-import socket
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any
 
 from fastapi import Body, FastAPI, Header, HTTPException, status
-from mysql.connector import Error, errorcode
 from mysql.connector.pooling import MySQLConnectionPool
 
 from .config.server import ServerConfig
@@ -67,7 +65,6 @@ merchant_transforms_perform_controller = MerchantTransformPerformController(dao=
 user_merchant_transforms_get_controller = UserMerchantTransformsGetController(dao=dao)
 user_transport_controller = UserTransportController(dao=dao)
 user_state_get_controller = UserStateGetController(dao=dao)
-
 
 app = FastAPI()
 

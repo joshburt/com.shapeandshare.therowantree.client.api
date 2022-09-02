@@ -27,38 +27,38 @@ class DBDAO:
     def __init__(self, cnxpool: MySQLConnectionPool):
         self.cnxpool = cnxpool
 
-    def transport_user(self, user_guid: str, location: str) -> Any:
+    def user_transport(self, user_guid: str, location: str) -> Any:
         args: list = [user_guid, location]
         rows: list[Tuple[str]] = self._call_proc("transportUserByGUID", args)
         return rows
 
-    def get_user_merchant_transforms(self, user_guid: str) -> Any:
+    def user_merchant_transforms_get(self, user_guid: str) -> Any:
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserMerchantTransformsByGUID", args)
         return rows
 
-    def perform_merchant_transform(self, user_guid: str, store_name: str) -> Any:
+    def merchant_transform_perform(self, user_guid: str, store_name: str) -> Any:
         args: list = [user_guid, store_name]
         rows: list[Tuple[str]] = self._call_proc("peformMerchantTransformByGUID", args)
         return rows
 
-    def get_user_active_feature_state_details(self, user_guid: str) -> Any:
+    def user_active_feature_state_details_get(self, user_guid: str) -> Any:
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserActiveFeatureStateDetailsByGUID", args)
         return rows
 
-    def get_user_active_feature(self, user_guid: str) -> Any:
+    def user_active_feature_get(self, user_guid: str) -> Any:
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserActiveFeatureByGUID", args)
         return rows
 
-    def get_user_features(self, user_guid: str) -> Any:
+    def user_features_get(self, user_guid: str) -> Any:
         args: list = [
             user_guid,
         ]
@@ -71,14 +71,14 @@ class DBDAO:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
         return rows[0][0]
 
-    def delete_user(self, user_guid: str) -> Any:
+    def user_delete(self, user_guid: str) -> Any:
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("deleteUserByGUID", args)
         return rows
 
-    def get_user_active_state(self, user_guid: str) -> int:
+    def user_active_state_get(self, user_guid: str) -> int:
         args: list[str, int] = [
             user_guid,
         ]
@@ -87,7 +87,7 @@ class DBDAO:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
         return rows[0][0]
 
-    def set_user_active_state(self, user_guid: str, active: bool) -> None:
+    def user_active_state_set(self, user_guid: str, active: bool) -> None:
         args = [
             user_guid,
         ]
@@ -97,7 +97,7 @@ class DBDAO:
             proc = "setUserInactiveByGUID"
         self._call_proc(name=proc, args=args)
 
-    def get_user_stores_by_guid(self, user_guid: str) -> Any:
+    def user_stores_by_guid_get(self, user_guid: str) -> Any:
         # Used by client api
         args: list[str, int] = [
             user_guid,
@@ -105,7 +105,7 @@ class DBDAO:
         rows: list[Tuple[Any]] = self._call_proc("getUserStoresByGUID", args)
         return rows
 
-    def get_user_income_by_guid(self, user_guid: str) -> Any:
+    def user_income_by_guid_get(self, user_guid: str) -> Any:
         args: list[str] = [
             user_guid,
         ]

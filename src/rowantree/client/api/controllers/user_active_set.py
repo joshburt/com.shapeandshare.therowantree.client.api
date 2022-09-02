@@ -13,5 +13,5 @@ class UserActiveSetController(AbstractController):
         super().__init__(dao=dao)
 
     def execute(self, user_guid: str, request: UserActiveSetRequest) -> UserActiveSetRequest:
-        self.dao.set_user_active_state(user_guid=user_guid, active=request.active)
+        self.dao.user_active_state_set(user_guid=user_guid, active=request.active)
         return request

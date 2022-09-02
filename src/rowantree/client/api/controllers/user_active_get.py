@@ -14,7 +14,7 @@ class UserActiveGetController(AbstractController):
         # If the requested user does not exist we do not expose this in the response. (information leakage).
         # If the user is not found or is inactive we return an inactive response.
         try:
-            user_active_state = self.dao.get_user_active_state(user_guid=user_guid)
+            user_active_state = self.dao.user_active_state_get(user_guid=user_guid)
             logging.debug(f"user state requested for: {user_guid}, result: {user_active_state}")
         except IncorrectRowCountError as error:
             logging.debug(f"caught: {str(error)}")

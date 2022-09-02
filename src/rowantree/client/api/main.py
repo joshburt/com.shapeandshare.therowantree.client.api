@@ -14,11 +14,20 @@ from .contracts.user_active_get_response import UserActiveGetResponse
 from .contracts.user_active_set_request import UserActiveSetRequest
 from .contracts.user_create_response import UserCreateResponse
 from .contracts.user_income_set_request import UserIncomeSetRequest
+from .controllers.merchant_transforms_perform import MerchantTransformPerformController
 from .controllers.user_active_get import UserActiveGetController
 from .controllers.user_active_set import UserActiveSetController
+from .controllers.user_create import UserCreateController
+from .controllers.user_delete import UserDeleteController
+from .controllers.user_features_active_get import UserFeaturesActiveGetController
+from .controllers.user_features_get import UserFeaturesGetController
 from .controllers.user_income_get import UserIncomeGetController
 from .controllers.user_income_set import UserIncomeSetController
+from .controllers.user_merchant_transforms_get import UserMerchantTransformsGetController
+from .controllers.user_population_get import UserPopulationGetController
+from .controllers.user_state_get import UserStateGetController
 from .controllers.user_stores_get import UserStoresGetController
+from .controllers.user_transport import UserTransportController
 from .db.dao import DBDAO
 from .db.utils import get_connect_pool
 
@@ -49,12 +58,11 @@ user_active_set_controller = UserActiveSetController(dao=dao)
 user_stores_get_controller = UserStoresGetController(dao=dao)
 user_income_get_controller = UserIncomeGetController(dao=dao)
 user_income_set_controller = UserIncomeSetController(dao=dao)
-
 user_create_controller = UserCreateController(dao=dao)
-user_features_get_controller = UserFeaturesGetController(dao=dao)
-user_population_get_controller = UserPopulationGetController(dao=dao)
-user_features_active_get_controller = UserFeaturesActiveGetController(dao=dao)
 user_delete_controller = UserDeleteController(dao=dao)
+user_features_get_controller = UserFeaturesGetController(dao=dao)
+user_features_active_get_controller = UserFeaturesActiveGetController(dao=dao)
+user_population_get_controller = UserPopulationGetController(dao=dao)
 merchant_transforms_perform_controller = MerchantTransformPerformController(dao=dao)
 user_merchant_transforms_get_controller = UserMerchantTransformsGetController(dao=dao)
 user_transport_controller = UserTransportController(dao=dao)
@@ -168,16 +176,15 @@ async def user_population_get_handler(user_guid: str, api_access_key: str = Head
     return user_population_get_controller.execute(user_guid=user_guid)
 
 
-# Consider reducing to just /v1/merchant
-@app.post("/v1/merchant/transforms", status_code=status.HTTP_202_ACCEPTED)
+@app.post("/v1/user/{user_guid}/merchant", status_code=status.HTTP_201_CREATED)
 async def merchant_transforms_perform_handler(
-    request: MerchantTransformRequest, api_access_key: str = Header(default=None)
+    user_guid: str, request: MerchantTransformRequest, api_access_key: str = Header(default=None)
 ) -> Any:
     if api_access_key != config.access_key:
         logging.debug("bad access key")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Bad Access Key")
 
-    return merchant_transforms_perform_controller.execute(request=request)
+    return merchant_transforms_perform_controller.execute(user_guid=user_guid, request=request)
 
 
 @app.get("/v1/user/{user_id}/merchant", status_code=status.HTTP_200_OK)

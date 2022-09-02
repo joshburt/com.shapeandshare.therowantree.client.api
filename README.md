@@ -9,7 +9,7 @@ Deployment
 ----------
 **Start the service (development only):**
 ```
-    python ./api.py
+uvicorn src.rowantree.client.api.main:app --reload
 ```
 
 **Production Deployment**

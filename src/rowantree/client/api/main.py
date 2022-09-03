@@ -10,7 +10,6 @@ from starlette.middleware.cors import CORSMiddleware
 
 from .config.server import ServerConfig
 from .contracts.dto.user_feature import UserFeature
-from .contracts.dto.user_income import UserIncome
 from .contracts.dto.user_state import UserState
 from .contracts.requests.merchant_transform_request import MerchantTransformRequest
 from .contracts.requests.user_active_set_request import UserActiveSetRequest
@@ -116,7 +115,9 @@ async def merchant_transforms_perform_handler(
 
 
 @app.get("/v1/user/{user_guid}/merchant", status_code=status.HTTP_200_OK)
-async def user_merchant_transforms_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> Any:
+async def user_merchant_transforms_get_handler(
+    user_guid: str, api_access_key: str = Header(default=None)
+) -> UserMerchantTransformsGetResponse:
     authorize(api_access_key=api_access_key)
     return user_merchant_transforms_get_controller.execute(user_guid=user_guid)
 

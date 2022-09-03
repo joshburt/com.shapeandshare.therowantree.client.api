@@ -3,7 +3,7 @@
 import logging
 import socket
 from datetime import datetime
-from typing import Any, Optional, Tuple
+from typing import Optional, Tuple
 
 import mysql.connector
 from mysql.connector import errorcode

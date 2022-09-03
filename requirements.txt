@@ -1,5 +1,5 @@
 fastapi
 uvicorn[standard]
 pydantic
-requests
 mysql-connector-python
+starlette

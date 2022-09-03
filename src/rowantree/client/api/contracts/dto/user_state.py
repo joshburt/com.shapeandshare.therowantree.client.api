@@ -2,16 +2,18 @@ from typing import Any, Tuple
 
 from pydantic import BaseModel
 
+from .user_active_feature_detail import UserActiveFeatureDetail
 from .user_notification import UserNotification
+from .user_store import UserStore
 
 
 class UserState(BaseModel):
     active: bool
-    stores: Any
+    stores: list[UserStore]
     incomes: Any
-    features: list[Tuple[str]]
-    active_features: list[Tuple[str]]
-    active_features_details: list[Tuple[str, Any]]
+    features: list[str]
+    active_features: list[str]
+    active_features_details: list[UserActiveFeatureDetail]
     population: int
-    merchants: list[Tuple[str]]
+    merchants: list[str]
     notifications: list[UserNotification]

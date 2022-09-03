@@ -9,8 +9,10 @@ import mysql.connector
 from mysql.connector import errorcode
 from mysql.connector.pooling import MySQLConnectionPool
 
+from ..contracts.dto.user_active_feature_detail import UserActiveFeatureDetail
 from ..contracts.dto.user_event import UserEvent
 from ..contracts.dto.user_notification import UserNotification
+from ..contracts.dto.user_store import UserStore
 from ..contracts.requests.user_income_set_request import UserIncomeSetRequest
 from .incorrect_row_count_error import IncorrectRowCountError
 
@@ -35,19 +37,27 @@ class DBDAO:
         rows: list[Tuple[str]] = self._call_proc("peformMerchantTransformByGUID", args)
         return rows
 
-    def user_active_feature_get(self, user_guid: str) -> Any:
+    def user_active_feature_get(self, user_guid: str) -> list[str]:
+        active_features: list[str] = []
+
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserActiveFeatureByGUID", args)
-        return rows
+        for row in rows:
+            active_features.append(row[0])
+        return active_features
 
-    def user_active_feature_state_details_get(self, user_guid: str) -> list[Tuple[str, Any]]:
+    def user_active_feature_state_details_get(self, user_guid: str) -> list[UserActiveFeatureDetail]:
+        feature_details: list[UserActiveFeatureDetail] = []
         args: list = [
             user_guid,
         ]
-        rows: list[Tuple[str, Any]] = self._call_proc("getUserActiveFeatureStateDetailsByGUID", args)
-        return rows
+        rows: list[Tuple[str, Optional[str]]] = self._call_proc("getUserActiveFeatureStateDetailsByGUID", args)
+        for row in rows:
+            feature_detail: UserActiveFeatureDetail = UserActiveFeatureDetail(name=row[0], description=row[1])
+            feature_details.append(feature_detail)
+        return feature_details
 
     def users_active_get(self) -> list[str]:
         my_active_users: list[str] = []
@@ -91,12 +101,16 @@ class DBDAO:
         ]
         self._call_proc("deleteUserByGUID", args)
 
-    def user_features_get(self, user_guid: str) -> Any:
+    def user_features_get(self, user_guid: str) -> list[str]:
+        features: list[str] = []
+
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserFeaturesByGUID", args)
-        return rows
+        for row in rows:
+            features.append(row[0])
+        return features
 
     def user_income_by_guid_get(self, user_guid: str) -> Any:
         args: list[str] = [
@@ -110,12 +124,16 @@ class DBDAO:
         rows: list[Tuple[Any]] = self._call_proc("deltaUserIncomeByNameAndGUID", args)
         return rows
 
-    def user_merchant_transforms_get(self, user_guid: str) -> list[Tuple[str]]:
+    def user_merchant_transforms_get(self, user_guid: str) -> list[str]:
+        merchants: list[str] = []
+
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserMerchantTransformsByGUID", args)
-        return rows
+        for row in rows:
+            merchants.append(row[0])
+        return merchants
 
     def user_notifications_get(self, user_guid: str) -> list[UserNotification]:
         notifications: list[UserNotification] = []
@@ -149,13 +167,18 @@ class DBDAO:
         )
         return rows[0][0]
 
-    def user_stores_by_guid_get(self, user_guid: str) -> Any:
+    def user_stores_by_guid_get(self, user_guid: str) -> list[UserStore]:
+        stores: list[UserStore] = []
+
         # Used by client api
         args: list[str, int] = [
             user_guid,
         ]
-        rows: list[Tuple[Any]] = self._call_proc("getUserStoresByGUID", args)
-        return rows
+        rows: list[Tuple[str, Optional[str], int]] = self._call_proc("getUserStoresByGUID", args)
+        for row in rows:
+            store: UserStore = UserStore(name=row[0], description=row[1], amount=row[2])
+            stores.append(store)
+        return stores
 
     def user_stores_by_id_get(self, target_user) -> dict[str, Any]:
         # used by server

@@ -3,18 +3,22 @@ import os
 from pathlib import Path
 from typing import Any
 
-from fastapi import Body, FastAPI, Header, status
+from fastapi import FastAPI, Header, status
 from mysql.connector.pooling import MySQLConnectionPool
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 
 from .config.server import ServerConfig
+from .contracts.dto.user_feature import UserFeature
+from .contracts.dto.user_income import UserIncome
 from .contracts.dto.user_state import UserState
 from .contracts.requests.merchant_transform_request import MerchantTransformRequest
 from .contracts.requests.user_active_set_request import UserActiveSetRequest
 from .contracts.requests.user_income_set_request import UserIncomeSetRequest
+from .contracts.requests.user_transport_request import UserTransportRequest
 from .contracts.responses.user_active_get_response import UserActiveGetResponse
 from .contracts.responses.user_create_response import UserCreateResponse
+from .contracts.responses.user_population_get_response import UserPopulationGetResponse
 from .controllers.merchant_transforms_perform import MerchantTransformPerformController
 from .controllers.user_active_get import UserActiveGetController
 from .controllers.user_active_set import UserActiveSetController
@@ -117,7 +121,7 @@ async def user_active_get_handler(user_guid: str, api_access_key: str = Header(d
 # Set User's Active State
 @app.post("/v1/user/{user_guid}/active", status_code=status.HTTP_200_OK)
 async def user_active_set_handler(
-    request: UserActiveSetRequest, user_guid: str, api_access_key: str = Header(default=None)
+    user_guid: str, request: UserActiveSetRequest, api_access_key: str = Header(default=None)
 ) -> UserActiveSetRequest:
     authorize(api_access_key=api_access_key)
     return user_active_set_controller.execute(user_guid=user_guid, request=request)
@@ -145,23 +149,23 @@ async def user_features_get_handler(user_guid: str, api_access_key: str = Header
 @app.get("/v1/user/{user_guid}/features/active", status_code=status.HTTP_200_OK)
 async def user_features_active_get_handler(
     user_guid: str, api_access_key: str = Header(default=None), details: bool = False
-) -> Any:
+) -> UserFeature:
     authorize(api_access_key=api_access_key)
     return user_features_active_get_controller.execute(user_guid=user_guid, details=details)
 
 
 @app.get("/v1/user/{user_guid}/income", status_code=status.HTTP_200_OK)
-async def user_income_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> Any:
+async def user_income_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> list[UserIncome]:
     authorize(api_access_key=api_access_key)
     return user_income_get_controller.execute(user_guid=user_guid)
 
 
 @app.post("/v1/user/{user_guid}/income", status_code=status.HTTP_200_OK)
 async def user_income_set_handler(
-    request: UserIncomeSetRequest, user_guid: str, api_access_key: str = Header(default=None)
-) -> Any:
+    user_guid: str, request: UserIncomeSetRequest, api_access_key: str = Header(default=None)
+) -> None:
     authorize(api_access_key=api_access_key)
-    return user_income_set_controller.execute(user_guid=user_guid, request=request)
+    user_income_set_controller.execute(user_guid=user_guid, request=request)
 
 
 @app.get("/v1/user/{user_id}/merchant", status_code=status.HTTP_200_OK)
@@ -171,17 +175,19 @@ async def user_merchant_transforms_get_handler(user_guid: str, api_access_key: s
 
 
 @app.get("/v1/user/{user_guid}/population", status_code=status.HTTP_200_OK)
-async def user_population_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> Any:
+async def user_population_get_handler(
+    user_guid: str, api_access_key: str = Header(default=None)
+) -> UserPopulationGetResponse:
     authorize(api_access_key=api_access_key)
     return user_population_get_controller.execute(user_guid=user_guid)
 
 
 @app.post("/v1/user/{user_guid}/transport", status_code=status.HTTP_200_OK)
 async def user_transport_handler(
-    user_guid: str, location: str = Body(), api_access_key: str = Header(default=None)
-) -> Any:
+    user_guid: str, request: UserTransportRequest, api_access_key: str = Header(default=None)
+) -> UserFeature:
     authorize(api_access_key=api_access_key)
-    return user_transport_controller.execute(user_guid=user_guid, location=location)
+    return user_transport_controller.execute(user_guid=user_guid, request=request)
 
 
 @app.get("/v1/user/{user_guid}/state", status_code=status.HTTP_200_OK)

@@ -9,8 +9,9 @@ import mysql.connector
 from mysql.connector import errorcode
 from mysql.connector.pooling import MySQLConnectionPool
 
-from ..contracts.dto.user_active_feature_detail import UserActiveFeatureDetail
 from ..contracts.dto.user_event import UserEvent
+from ..contracts.dto.user_feature import UserFeature
+from ..contracts.dto.user_income import UserIncome
 from ..contracts.dto.user_notification import UserNotification
 from ..contracts.dto.user_store import UserStore
 from ..contracts.requests.user_income_set_request import UserIncomeSetRequest
@@ -37,27 +38,30 @@ class DBDAO:
         rows: list[Tuple[str]] = self._call_proc("peformMerchantTransformByGUID", args)
         return rows
 
-    def user_active_feature_get(self, user_guid: str) -> list[str]:
-        active_features: list[str] = []
-
+    def user_active_feature_get(self, user_guid: str) -> UserFeature:
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserActiveFeatureByGUID", args)
-        for row in rows:
-            active_features.append(row[0])
-        return active_features
+        if len(rows) != 1:
+            raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
+        feature_detail: UserFeature = UserFeature(name=rows[0][0])
+        return feature_detail
 
-    def user_active_feature_state_details_get(self, user_guid: str) -> list[UserActiveFeatureDetail]:
-        feature_details: list[UserActiveFeatureDetail] = []
+    def user_active_feature_state_details_get(self, user_guid: str) -> UserFeature:
+        # feature_details: list[UserFeature] = []
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str, Optional[str]]] = self._call_proc("getUserActiveFeatureStateDetailsByGUID", args)
-        for row in rows:
-            feature_detail: UserActiveFeatureDetail = UserActiveFeatureDetail(name=row[0], description=row[1])
-            feature_details.append(feature_detail)
-        return feature_details
+        if len(rows) != 1:
+            raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
+        feature_detail: UserFeature = UserFeature(name=rows[0][0], description=rows[0][1])
+        return feature_detail
+        # for row in rows:
+        #     feature_detail: UserFeature = UserFeature(name=row[0], description=row[1])
+        #     feature_details.append(feature_detail)
+        # return feature_details
 
     def users_active_get(self) -> list[str]:
         my_active_users: list[str] = []
@@ -112,17 +116,21 @@ class DBDAO:
             features.append(row[0])
         return features
 
-    def user_income_by_guid_get(self, user_guid: str) -> Any:
+    def user_income_by_guid_get(self, user_guid: str) -> list[UserIncome]:
+        income_sources: list[UserIncome] = []
+
         args: list[str] = [
             user_guid,
         ]
-        rows: list[Tuple[Any]] = self._call_proc("getUserIncomeByGUID", args)
-        return rows
+        rows: list[Tuple[int, str, Optional[str]]] = self._call_proc("getUserIncomeByGUID", args)
+        for row in rows:
+            income: UserIncome = UserIncome(amount=row[0], name=row[1], description=row[2])
+            income_sources.append(income)
+        return income_sources
 
-    def user_income_set(self, user_guid: str, transaction: UserIncomeSetRequest) -> Any:
+    def user_income_set(self, user_guid: str, transaction: UserIncomeSetRequest) -> None:
         args = [user_guid, transaction.income_source_name, transaction.amount]
-        rows: list[Tuple[Any]] = self._call_proc("deltaUserIncomeByNameAndGUID", args)
-        return rows
+        self._call_proc("deltaUserIncomeByNameAndGUID", args)
 
     def user_merchant_transforms_get(self, user_guid: str) -> list[str]:
         merchants: list[str] = []
@@ -150,7 +158,7 @@ class DBDAO:
         return notifications
 
     def user_population_by_id_get(self, target_user) -> int:
-        rows: list[Tuple] = self._call_proc(
+        rows: list[Tuple[int]] = self._call_proc(
             "getUserPopulationByID",
             [
                 target_user,
@@ -159,7 +167,7 @@ class DBDAO:
         return rows[0][0]
 
     def user_population_by_guid_get(self, user_guid: str) -> int:
-        rows: list[Tuple] = self._call_proc(
+        rows: list[Tuple[int]] = self._call_proc(
             "getUserPopulationByGUID",
             [
                 user_guid,
@@ -193,10 +201,14 @@ class DBDAO:
             user_stores[response_tuple[0]] = response_tuple[2]
         return user_stores
 
-    def user_transport(self, user_guid: str, location: str) -> Any:
+    def user_transport(self, user_guid: str, location: str) -> UserFeature:
         args: list = [user_guid, location]
-        rows: list[Tuple[str]] = self._call_proc("transportUserByGUID", args)
-        return rows
+        rows: list[Tuple[str, Optional[str]]] = self._call_proc("transportUserByGUID", args, True)
+        if len(rows) != 1:
+            raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
+        location_tuple: Tuple[str, Optional[str]] = rows[0]
+        location: UserFeature = UserFeature(name=location_tuple[0], description=location_tuple[1])
+        return location
 
     # Utility functions
 
@@ -205,8 +217,9 @@ class DBDAO:
         for action in action_queue:
             self._call_proc(action[0], action[1])
 
-    def _call_proc(self, name: str, args: list) -> Optional[list[Tuple]]:
-        logging.debug(f"[DAO] [Stored Proc Call Details] Name: '{name}', Arguments: {args}")
+    def _call_proc(self, name: str, args: list, debug: bool = False) -> Optional[list[Tuple]]:
+        if debug:
+            logging.debug(f"[DAO] [Stored Proc Call Details] Name: '{name}', Arguments: {args}")
         rows: Optional[list[Tuple]] = None
         try:
             cnx = self.cnxpool.get_connection()
@@ -229,6 +242,7 @@ class DBDAO:
         else:
             cnx.close()
 
-        logging.debug("[DAO] [Stored Proc Call Details] Returning:")
-        logging.debug(rows)
+        if debug:
+            logging.debug("[DAO] [Stored Proc Call Details] Returning:")
+            logging.debug(rows)
         return rows

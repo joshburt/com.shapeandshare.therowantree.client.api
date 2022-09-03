@@ -3,10 +3,12 @@ from typing import Any, Tuple
 from starlette import status
 from starlette.exceptions import HTTPException
 
-from ..contracts.dto.user_active_feature_detail import UserActiveFeatureDetail
+from ..contracts.dto.user_feature import UserFeature
+from ..contracts.dto.user_income import UserIncome
 from ..contracts.dto.user_notification import UserNotification
 from ..contracts.dto.user_state import UserState
 from ..contracts.dto.user_store import UserStore
+from ..contracts.responses.user_population_get_response import UserPopulationGetResponse
 from ..db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController
 
@@ -23,7 +25,7 @@ class UserStateGetController(AbstractController):
         stores: list[UserStore] = self.dao.user_stores_by_guid_get(user_guid=user_guid)
 
         # User Income
-        incomes: Any = self.dao.user_income_by_guid_get(user_guid=user_guid)
+        income: list[UserIncome] = self.dao.user_income_by_guid_get(user_guid=user_guid)
 
         # Features
         features: list[str] = self.dao.user_features_get(user_guid=user_guid)
@@ -32,12 +34,10 @@ class UserStateGetController(AbstractController):
         population: int = self.dao.user_population_by_guid_get(user_guid=user_guid)
 
         # Active Feature
-        active_features: list[str] = self.dao.user_active_feature_get(user_guid=user_guid)
+        active_features: UserFeature = self.dao.user_active_feature_get(user_guid=user_guid)
 
         # Active Feature Details
-        active_features_details: list[UserActiveFeatureDetail] = self.dao.user_active_feature_state_details_get(
-            user_guid=user_guid
-        )
+        active_features_details: UserFeature = self.dao.user_active_feature_state_details_get(user_guid=user_guid)
 
         # Merchants
         merchants: list[str] = self.dao.user_merchant_transforms_get(user_guid=user_guid)
@@ -48,7 +48,7 @@ class UserStateGetController(AbstractController):
         user_state: UserState = UserState(
             active=active,
             stores=stores,
-            incomes=incomes,
+            income=income,
             features=features,
             active_features=active_features,
             active_features_details=active_features_details,

@@ -123,6 +123,7 @@ async def user_active_set_handler(
     return user_active_set_controller.execute(user_guid=user_guid, request=request)
 
 
+# Create User
 @app.post("/v1/user", status_code=status.HTTP_201_CREATED)
 async def user_create_handler(api_access_key: str = Header(default=None)) -> UserCreateResponse:
     authorize(api_access_key=api_access_key)

@@ -13,8 +13,6 @@ from .abstract_controller import AbstractController
 
 class UserStateGetController(AbstractController):
     def execute(self, user_guid: str) -> UserState:
-        # TODO: fill in once other response structures have been verified and defined
-
         # User Game State
         try:
             active: bool = self.dao.user_active_state_get(user_guid=user_guid)

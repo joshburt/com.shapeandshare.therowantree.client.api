@@ -19,10 +19,10 @@ class UserStateGetController(AbstractController):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found") from error
 
         # User Stores (Inventory)
-        stores: list[UserStore] = self.dao.user_stores_by_guid_get(user_guid=user_guid)
+        stores: list[UserStore] = self.dao.user_stores_get(user_guid=user_guid)
 
         # User Income
-        income: list[UserIncome] = self.dao.user_income_by_guid_get(user_guid=user_guid)
+        income: list[UserIncome] = self.dao.user_income_get(user_guid=user_guid)
 
         # Features
         features: list[str] = self.dao.user_features_get(user_guid=user_guid)

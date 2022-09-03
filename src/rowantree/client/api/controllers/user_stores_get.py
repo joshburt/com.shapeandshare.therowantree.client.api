@@ -4,4 +4,4 @@ from .abstract_controller import AbstractController
 
 class UserStoresGetController(AbstractController):
     def execute(self, user_guid: str) -> UserStoresGetResponse:
-        return UserStoresGetResponse(stores=self.dao.user_stores_by_guid_get(user_guid=user_guid))
+        return UserStoresGetResponse(stores=self.dao.user_stores_get(user_guid=user_guid))

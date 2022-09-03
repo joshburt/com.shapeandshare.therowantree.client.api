@@ -110,7 +110,7 @@ class DBDAO:
             features.append(row[0])
         return features
 
-    def user_income_by_guid_get(self, user_guid: str) -> list[UserIncome]:
+    def user_income_get(self, user_guid: str) -> list[UserIncome]:
         income_sources: list[UserIncome] = []
 
         args: list[str] = [
@@ -151,15 +151,6 @@ class DBDAO:
             notifications.append(notification)
         return notifications
 
-    def user_population_by_id_get(self, target_user) -> int:
-        rows: list[Tuple[int]] = self._call_proc(
-            "getUserPopulationByID",
-            [
-                target_user,
-            ],
-        )
-        return rows[0][0]
-
     def user_population_by_guid_get(self, user_guid: str) -> int:
         rows: list[Tuple[int]] = self._call_proc(
             "getUserPopulationByGUID",
@@ -169,7 +160,7 @@ class DBDAO:
         )
         return rows[0][0]
 
-    def user_stores_by_guid_get(self, user_guid: str) -> list[UserStore]:
+    def user_stores_get(self, user_guid: str) -> list[UserStore]:
         stores: list[UserStore] = []
 
         # Used by client api
@@ -181,19 +172,6 @@ class DBDAO:
             store: UserStore = UserStore(name=row[0], description=row[1], amount=row[2])
             stores.append(store)
         return stores
-
-    def user_stores_by_id_get(self, target_user) -> dict[str, Any]:
-        # used by server
-        user_stores: dict[str, Any] = {}
-        rows: list[Tuple] = self._call_proc(
-            "getUserStoresByID",
-            [
-                target_user,
-            ],
-        )
-        for response_tuple in rows:
-            user_stores[response_tuple[0]] = response_tuple[2]
-        return user_stores
 
     def user_transport(self, user_guid: str, location: str) -> UserFeature:
         args: list = [user_guid, location]

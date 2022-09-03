@@ -18,6 +18,8 @@ from .contracts.requests.user_income_set_request import UserIncomeSetRequest
 from .contracts.requests.user_transport_request import UserTransportRequest
 from .contracts.responses.user_active_get_response import UserActiveGetResponse
 from .contracts.responses.user_create_response import UserCreateResponse
+from .contracts.responses.user_features_get_response import UserFeaturesGetResponse
+from .contracts.responses.user_income_get_response import UserIncomeGetResponse
 from .contracts.responses.user_population_get_response import UserPopulationGetResponse
 from .controllers.merchant_transforms_perform import MerchantTransformPerformController
 from .controllers.user_active_get import UserActiveGetController
@@ -99,16 +101,17 @@ def authorize(api_access_key: str):
 
 # Application Health Endpoint
 @app.get("/health/plain", status_code=status.HTTP_200_OK)
-async def health_plain():
+async def health_plain() -> bool:
     return True
 
 
+# Request Merchant Exchange (transform) For User
 @app.post("/v1/user/{user_guid}/merchant", status_code=status.HTTP_201_CREATED)
 async def merchant_transforms_perform_handler(
     user_guid: str, request: MerchantTransformRequest, api_access_key: str = Header(default=None)
-) -> Any:
+) -> None:
     authorize(api_access_key=api_access_key)
-    return merchant_transforms_perform_controller.execute(user_guid=user_guid, request=request)
+    merchant_transforms_perform_controller.execute(user_guid=user_guid, request=request)
 
 
 # Get User's Active State
@@ -134,6 +137,7 @@ async def user_create_handler(api_access_key: str = Header(default=None)) -> Use
     return user_create_controller.execute()
 
 
+# Delete User
 @app.delete("/v1/user/{user_guid}", status_code=status.HTTP_200_OK)
 async def user_delete_handler(user_guid: str, api_access_key: str = Header(default=None)) -> None:
     authorize(api_access_key=api_access_key)
@@ -141,7 +145,9 @@ async def user_delete_handler(user_guid: str, api_access_key: str = Header(defau
 
 
 @app.get("/v1/user/{user_guid}/features", status_code=status.HTTP_200_OK)
-async def user_features_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> Any:
+async def user_features_get_handler(
+    user_guid: str, api_access_key: str = Header(default=None)
+) -> UserFeaturesGetResponse:
     authorize(api_access_key=api_access_key)
     return user_features_get_controller.execute(user_guid=user_guid)
 
@@ -155,7 +161,7 @@ async def user_features_active_get_handler(
 
 
 @app.get("/v1/user/{user_guid}/income", status_code=status.HTTP_200_OK)
-async def user_income_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> list[UserIncome]:
+async def user_income_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserIncomeGetResponse:
     authorize(api_access_key=api_access_key)
     return user_income_get_controller.execute(user_guid=user_guid)
 

@@ -33,10 +33,9 @@ class DBDAO:
     def __init__(self, cnxpool: MySQLConnectionPool):
         self.cnxpool = cnxpool
 
-    def merchant_transform_perform(self, user_guid: str, store_name: str) -> Any:
+    def merchant_transform_perform(self, user_guid: str, store_name: str) -> None:
         args: list = [user_guid, store_name]
-        rows: list[Tuple[str]] = self._call_proc("peformMerchantTransformByGUID", args)
-        return rows
+        self._call_proc("peformMerchantTransformByGUID", args)
 
     def user_active_feature_get(self, user_guid: str) -> UserFeature:
         args: list = [

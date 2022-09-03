@@ -20,6 +20,7 @@ from .contracts.responses.user_active_get_response import UserActiveGetResponse
 from .contracts.responses.user_create_response import UserCreateResponse
 from .contracts.responses.user_features_get_response import UserFeaturesGetResponse
 from .contracts.responses.user_income_get_response import UserIncomeGetResponse
+from .contracts.responses.user_merchant_transforms_get_response import UserMerchantTransformsGetResponse
 from .contracts.responses.user_population_get_response import UserPopulationGetResponse
 from .controllers.merchant_transforms_perform import MerchantTransformPerformController
 from .controllers.user_active_get import UserActiveGetController
@@ -114,6 +115,12 @@ async def merchant_transforms_perform_handler(
     merchant_transforms_perform_controller.execute(user_guid=user_guid, request=request)
 
 
+@app.get("/v1/user/{user_guid}/merchant", status_code=status.HTTP_200_OK)
+async def user_merchant_transforms_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> Any:
+    authorize(api_access_key=api_access_key)
+    return user_merchant_transforms_get_controller.execute(user_guid=user_guid)
+
+
 # Get User's Active State
 @app.get("/v1/user/{user_guid}/active", status_code=status.HTTP_200_OK)
 async def user_active_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserActiveGetResponse:
@@ -172,12 +179,6 @@ async def user_income_set_handler(
 ) -> None:
     authorize(api_access_key=api_access_key)
     user_income_set_controller.execute(user_guid=user_guid, request=request)
-
-
-@app.get("/v1/user/{user_id}/merchant", status_code=status.HTTP_200_OK)
-async def user_merchant_transforms_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> Any:
-    authorize(api_access_key=api_access_key)
-    return user_merchant_transforms_get_controller.execute(user_guid=user_guid)
 
 
 @app.get("/v1/user/{user_guid}/population", status_code=status.HTTP_200_OK)

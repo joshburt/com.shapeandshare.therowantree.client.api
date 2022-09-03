@@ -137,7 +137,7 @@ class DBDAO:
         args: list = [
             user_guid,
         ]
-        rows: list[Tuple[str]] = self._call_proc("getUserMerchantTransformsByGUID", args)
+        rows: list[Tuple[str]] = self._call_proc("getUserMerchantTransformsByGUID", args, True)
         for row in rows:
             merchants.append(row[0])
         return merchants

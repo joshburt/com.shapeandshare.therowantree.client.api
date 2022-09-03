@@ -3,16 +3,18 @@ import os
 from pathlib import Path
 from typing import Any
 
-from fastapi import Body, FastAPI, Header, HTTPException, status
+from fastapi import Body, FastAPI, Header, status
 from mysql.connector.pooling import MySQLConnectionPool
+from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 
 from .config.server import ServerConfig
-from .contracts.merchant_transform_request import MerchantTransformRequest
-from .contracts.user_active_get_response import UserActiveGetResponse
-from .contracts.user_active_set_request import UserActiveSetRequest
-from .contracts.user_create_response import UserCreateResponse
-from .contracts.user_income_set_request import UserIncomeSetRequest
+from .contracts.dto.user_state import UserState
+from .contracts.requests.merchant_transform_request import MerchantTransformRequest
+from .contracts.requests.user_active_set_request import UserActiveSetRequest
+from .contracts.requests.user_income_set_request import UserIncomeSetRequest
+from .contracts.responses.user_active_get_response import UserActiveGetResponse
+from .contracts.responses.user_create_response import UserCreateResponse
 from .controllers.merchant_transforms_perform import MerchantTransformPerformController
 from .controllers.user_active_get import UserActiveGetController
 from .controllers.user_active_set import UserActiveSetController
@@ -128,9 +130,9 @@ async def user_create_handler(api_access_key: str = Header(default=None)) -> Use
 
 
 @app.delete("/v1/user/{user_guid}", status_code=status.HTTP_200_OK)
-async def user_delete_handler(user_guid: str, api_access_key: str = Header(default=None)) -> Any:
+async def user_delete_handler(user_guid: str, api_access_key: str = Header(default=None)) -> None:
     authorize(api_access_key=api_access_key)
-    return user_delete_controller.execute(user_guid=user_guid)
+    user_delete_controller.execute(user_guid=user_guid)
 
 
 @app.get("/v1/user/{user_guid}/features", status_code=status.HTTP_200_OK)
@@ -182,7 +184,7 @@ async def user_transport_handler(
 
 
 @app.get("/v1/user/{user_guid}/state", status_code=status.HTTP_200_OK)
-async def user_state_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> Any:
+async def user_state_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserState:
     authorize(api_access_key=api_access_key)
     return user_state_get_controller.execute(user_guid=user_guid)
 

@@ -1,4 +1,4 @@
-from ..contracts.user_create_response import UserCreateResponse
+from ..contracts.responses.user_create_response import UserCreateResponse
 from .abstract_controller import AbstractController
 
 

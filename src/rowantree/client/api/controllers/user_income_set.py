@@ -1,4 +1,4 @@
-from ..contracts.user_income_set_request import UserIncomeSetRequest
+from ..contracts.requests.user_income_set_request import UserIncomeSetRequest
 from ..controllers.abstract_controller import AbstractController
 
 

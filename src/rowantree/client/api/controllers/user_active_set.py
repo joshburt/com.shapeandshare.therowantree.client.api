@@ -1,4 +1,4 @@
-from ..contracts.user_active_set_request import UserActiveSetRequest
+from ..contracts.requests.user_active_set_request import UserActiveSetRequest
 from ..db.dao import DBDAO
 from .abstract_controller import AbstractController
 

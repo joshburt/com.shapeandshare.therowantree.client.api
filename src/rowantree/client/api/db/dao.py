@@ -2,13 +2,16 @@
 
 import logging
 import socket
-from typing import Any, Tuple
+from datetime import datetime
+from typing import Any, Optional, Tuple
 
 import mysql.connector
 from mysql.connector import errorcode
 from mysql.connector.pooling import MySQLConnectionPool
 
-from ..contracts.user_income_set_request import UserIncomeSetRequest
+from ..contracts.dto.user_event import UserEvent
+from ..contracts.dto.user_notification import UserNotification
+from ..contracts.requests.user_income_set_request import UserIncomeSetRequest
 from .incorrect_row_count_error import IncorrectRowCountError
 
 
@@ -39,11 +42,11 @@ class DBDAO:
         rows: list[Tuple[str]] = self._call_proc("getUserActiveFeatureByGUID", args)
         return rows
 
-    def user_active_feature_state_details_get(self, user_guid: str) -> Any:
+    def user_active_feature_state_details_get(self, user_guid: str) -> list[Tuple[str, Any]]:
         args: list = [
             user_guid,
         ]
-        rows: list[Tuple[str]] = self._call_proc("getUserActiveFeatureStateDetailsByGUID", args)
+        rows: list[Tuple[str, Any]] = self._call_proc("getUserActiveFeatureStateDetailsByGUID", args)
         return rows
 
     def users_active_get(self) -> list[str]:
@@ -53,14 +56,18 @@ class DBDAO:
             my_active_users.append(response_tuple[0])
         return my_active_users
 
-    def user_active_state_get(self, user_guid: str) -> int:
+    def user_active_state_get(self, user_guid: str) -> bool:
         args: list[str, int] = [
             user_guid,
         ]
         rows: list[Tuple[int]] = self._call_proc("getUserActivityStateByGUID", args)
         if len(rows) != 1:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
-        return rows[0][0]
+        if rows[0][0] == 0:
+            active: bool = False
+        else:
+            active: bool = True
+        return active
 
     def user_active_state_set(self, user_guid: str, active: bool) -> None:
         args = [
@@ -78,12 +85,11 @@ class DBDAO:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
         return rows[0][0]
 
-    def user_delete(self, user_guid: str) -> Any:
+    def user_delete(self, user_guid: str) -> None:
         args: list = [
             user_guid,
         ]
-        rows: list[Tuple[str]] = self._call_proc("deleteUserByGUID", args)
-        return rows
+        self._call_proc("deleteUserByGUID", args)
 
     def user_features_get(self, user_guid: str) -> Any:
         args: list = [
@@ -104,18 +110,41 @@ class DBDAO:
         rows: list[Tuple[Any]] = self._call_proc("deltaUserIncomeByNameAndGUID", args)
         return rows
 
-    def user_merchant_transforms_get(self, user_guid: str) -> Any:
+    def user_merchant_transforms_get(self, user_guid: str) -> list[Tuple[str]]:
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserMerchantTransformsByGUID", args)
         return rows
 
-    def user_population_get(self, target_user) -> int:
+    def user_notifications_get(self, user_guid: str) -> list[UserNotification]:
+        notifications: list[UserNotification] = []
+
+        args: list = [
+            user_guid,
+        ]
+        rows: list[Tuple[int, datetime, str]] = self._call_proc("getUserNotificationByGUID", args)
+        for row in rows:
+            notification: UserNotification = UserNotification(
+                index=row[0], timestamp=row[1], event=UserEvent.parse_raw(row[2])
+            )
+            notifications.append(notification)
+        return notifications
+
+    def user_population_by_id_get(self, target_user) -> int:
         rows: list[Tuple] = self._call_proc(
             "getUserPopulationByID",
             [
                 target_user,
+            ],
+        )
+        return rows[0][0]
+
+    def user_population_by_guid_get(self, user_guid: str) -> int:
+        rows: list[Tuple] = self._call_proc(
+            "getUserPopulationByGUID",
+            [
+                user_guid,
             ],
         )
         return rows[0][0]
@@ -153,8 +182,9 @@ class DBDAO:
         for action in action_queue:
             self._call_proc(action[0], action[1])
 
-    def _call_proc(self, name: str, args: list) -> list[Tuple]:
-        rows: list[Tuple] = []
+    def _call_proc(self, name: str, args: list) -> Optional[list[Tuple]]:
+        logging.debug(f"[DAO] [Stored Proc Call Details] Name: '{name}', Arguments: {args}")
+        rows: Optional[list[Tuple]] = None
         try:
             cnx = self.cnxpool.get_connection()
             cursor = cnx.cursor()
@@ -164,17 +194,18 @@ class DBDAO:
             cursor.close()
         except socket.error as error:
             logging.debug(error)
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            raise error
+        except mysql.connector.Error as error:
+            if error.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 logging.debug("Something is wrong with your user name or password")
-            elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            elif error.errno == errorcode.ER_BAD_DB_ERROR:
                 logging.debug("Database does not exist")
             else:
-                logging.debug(err)
+                logging.debug(error)
+            raise error
         else:
             cnx.close()
 
-        if rows is None:
-            raise Exception("Failure getting database information")
-
+        logging.debug("[DAO] [Stored Proc Call Details] Returning:")
+        logging.debug(rows)
         return rows

@@ -7,6 +7,7 @@ from mysql.connector.pooling import MySQLConnectionPool
 from ..config.server import ServerConfig
 
 
+# pylint: disable=duplicate-code
 def get_connect_pool(config: ServerConfig) -> MySQLConnectionPool:
     try:
         logging.debug("Connecting to database")

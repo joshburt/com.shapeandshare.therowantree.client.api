@@ -1,5 +1,3 @@
-from typing import Any
-
 from ..contracts.responses.user_features_get_response import UserFeaturesGetResponse
 from .abstract_controller import AbstractController
 

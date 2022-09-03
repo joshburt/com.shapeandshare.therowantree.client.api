@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 from ..db.dao import DBDAO
 
@@ -11,5 +11,5 @@ class AbstractController(ABC):
         self.dao = dao
 
     @abstractmethod
-    def execute(self, *args, **kwargs) -> Any:
+    def execute(self, *args, **kwargs) -> Optional[Any]:
         """Should be implemented in the subclass"""

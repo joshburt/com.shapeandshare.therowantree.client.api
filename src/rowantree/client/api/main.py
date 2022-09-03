@@ -1,7 +1,6 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any
 
 from fastapi import FastAPI, Header, status
 from mysql.connector.pooling import MySQLConnectionPool
@@ -21,6 +20,7 @@ from .contracts.responses.user_features_get_response import UserFeaturesGetRespo
 from .contracts.responses.user_income_get_response import UserIncomeGetResponse
 from .contracts.responses.user_merchant_transforms_get_response import UserMerchantTransformsGetResponse
 from .contracts.responses.user_population_get_response import UserPopulationGetResponse
+from .contracts.responses.user_stores_get_response import UserStoresGetResponse
 from .controllers.merchant_transforms_perform import MerchantTransformPerformController
 from .controllers.user_active_get import UserActiveGetController
 from .controllers.user_active_set import UserActiveSetController
@@ -205,6 +205,6 @@ async def user_state_get_handler(user_guid: str, api_access_key: str = Header(de
 
 
 @app.get("/v1/user/{user_guid}/stores", status_code=status.HTTP_200_OK)
-async def user_stores_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> Any:
+async def user_stores_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserStoresGetResponse:
     authorize(api_access_key=api_access_key)
     return user_stores_get_controller.execute(user_guid=user_guid)

@@ -48,7 +48,6 @@ class DBDAO:
         return feature_detail
 
     def user_active_feature_state_details_get(self, user_guid: str) -> UserFeature:
-        # feature_details: list[UserFeature] = []
         args: list = [
             user_guid,
         ]
@@ -57,10 +56,6 @@ class DBDAO:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
         feature_detail: UserFeature = UserFeature(name=rows[0][0], description=rows[0][1])
         return feature_detail
-        # for row in rows:
-        #     feature_detail: UserFeature = UserFeature(name=row[0], description=row[1])
-        #     feature_details.append(feature_detail)
-        # return feature_details
 
     def users_active_get(self) -> list[str]:
         my_active_users: list[str] = []
@@ -73,7 +68,7 @@ class DBDAO:
         args: list[str, int] = [
             user_guid,
         ]
-        rows: list[Tuple[int]] = self._call_proc("getUserActivityStateByGUID", args)
+        rows: list[Tuple[int]] = self._call_proc("getUserActivityStateByGUID", args, True)
         if len(rows) != 1:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
         if rows[0][0] == 0:
@@ -137,7 +132,7 @@ class DBDAO:
         args: list = [
             user_guid,
         ]
-        rows: list[Tuple[str]] = self._call_proc("getUserMerchantTransformsByGUID", args, True)
+        rows: list[Tuple[str]] = self._call_proc("getUserMerchantTransformsByGUID", args)
         for row in rows:
             merchants.append(row[0])
         return merchants
@@ -202,7 +197,7 @@ class DBDAO:
 
     def user_transport(self, user_guid: str, location: str) -> UserFeature:
         args: list = [user_guid, location]
-        rows: list[Tuple[str, Optional[str]]] = self._call_proc("transportUserByGUID", args, True)
+        rows: list[Tuple[str, Optional[str]]] = self._call_proc("transportUserByGUID", args)
         if len(rows) != 1:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
         location_tuple: Tuple[str, Optional[str]] = rows[0]
@@ -216,9 +211,10 @@ class DBDAO:
         for action in action_queue:
             self._call_proc(action[0], action[1])
 
+    # pylint: disable=duplicate-code
     def _call_proc(self, name: str, args: list, debug: bool = False) -> Optional[list[Tuple]]:
         if debug:
-            logging.debug(f"[DAO] [Stored Proc Call Details] Name: '{name}', Arguments: {args}")
+            logging.debug("[DAO] [Stored Proc Call Details] Name: {%s}, Arguments: {%s}", name, args)
         rows: Optional[list[Tuple]] = None
         try:
             cnx = self.cnxpool.get_connection()

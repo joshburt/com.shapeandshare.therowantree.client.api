@@ -1,5 +1,3 @@
-from typing import Any, Tuple
-
 from starlette import status
 from starlette.exceptions import HTTPException
 
@@ -8,7 +6,6 @@ from ..contracts.dto.user_income import UserIncome
 from ..contracts.dto.user_notification import UserNotification
 from ..contracts.dto.user_state import UserState
 from ..contracts.dto.user_store import UserStore
-from ..contracts.responses.user_population_get_response import UserPopulationGetResponse
 from ..db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController
 

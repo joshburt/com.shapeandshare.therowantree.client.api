@@ -1,4 +1,4 @@
-from rowantree.contracts.dto.user.active import UserActive
+from rowantree.contracts import UserActive
 
 from ..db.dao import DBDAO
 from .abstract_controller import AbstractController

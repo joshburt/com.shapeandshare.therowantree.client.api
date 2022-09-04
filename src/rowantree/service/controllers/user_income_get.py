@@ -1,4 +1,4 @@
-from rowantree.contracts.dto.user.incomes import UserIncomes
+from rowantree.contracts import UserIncomes
 
 from .abstract_controller import AbstractController
 

@@ -1,12 +1,14 @@
-from rowantree.contracts import UserFeature, UserIncome, UserNotification, UserStore
-from rowantree.contracts.dto.user.active import UserActive
-from rowantree.contracts.dto.user.features import UserFeatures
-from rowantree.contracts.dto.user.incomes import UserIncomes
-from rowantree.contracts.dto.user.merchants import UserMerchants
-from rowantree.contracts.dto.user.notifications import UserNotifications
-from rowantree.contracts.dto.user.population import UserPopulation
-from rowantree.contracts.dto.user.state import UserState
-from rowantree.contracts.dto.user.stores import UserStores
+from rowantree.contracts import (
+    UserActive,
+    UserFeature,
+    UserFeatures,
+    UserIncomes,
+    UserMerchants,
+    UserNotifications,
+    UserPopulation,
+    UserState,
+    UserStores,
+)
 from starlette import status
 from starlette.exceptions import HTTPException
 

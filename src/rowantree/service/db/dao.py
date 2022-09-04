@@ -8,18 +8,25 @@ from typing import Optional, Tuple
 import mysql.connector
 from mysql.connector import errorcode
 from mysql.connector.pooling import MySQLConnectionPool
-from rowantree.contracts import ActionQueue, UserEvent, UserFeature, UserIncome, UserNotification, UserStore
-from rowantree.contracts.dto.merchant.merchant import Merchant
-from rowantree.contracts.dto.user.active import UserActive
-from rowantree.contracts.dto.user.features import UserFeatures
-from rowantree.contracts.dto.user.incomes import UserIncomes
-from rowantree.contracts.dto.user.merchants import UserMerchants
-from rowantree.contracts.dto.user.notifications import UserNotifications
-from rowantree.contracts.dto.user.population import UserPopulation
-from rowantree.contracts.dto.user.stores import UserStores
-from rowantree.contracts.dto.user.user import User
+from rowantree.contracts import (
+    ActionQueue,
+    Merchant,
+    User,
+    UserActive,
+    UserEvent,
+    UserFeature,
+    UserFeatures,
+    UserIncome,
+    UserIncomes,
+    UserMerchants,
+    UserNotification,
+    UserNotifications,
+    UserPopulation,
+    UserStore,
+    UserStores,
+)
 
-from rowantree.service.sdk.contracts.requests.user.income_set import UserIncomeSetRequest
+from rowantree.service.sdk import UserIncomeSetRequest
 
 from .incorrect_row_count_error import IncorrectRowCountError
 

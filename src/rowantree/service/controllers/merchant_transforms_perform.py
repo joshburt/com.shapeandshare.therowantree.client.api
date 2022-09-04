@@ -1,4 +1,4 @@
-from rowantree.service.sdk.contracts.requests.merchant_transform import MerchantTransformRequest
+from rowantree.service.sdk import MerchantTransformRequest
 
 from .abstract_controller import AbstractController
 

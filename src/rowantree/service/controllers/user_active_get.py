@@ -1,6 +1,6 @@
 import logging
 
-from rowantree.contracts.dto.user.active import UserActive
+from rowantree.contracts import UserActive
 
 from ..db.dao import DBDAO
 from ..db.incorrect_row_count_error import IncorrectRowCountError
@@ -16,7 +16,7 @@ class UserActiveGetController(AbstractController):
         # If the user is not found or is inactive we return an inactive response.
         try:
             user_active: UserActive = self.dao.user_active_state_get(user_guid=user_guid)
-            logging.debug("user state requested for: {%s}, result: {%i}", user_guid, user_active_state)
+            logging.debug("user state requested for: {%s}, result: {%i}", user_guid, user_active.active)
         except IncorrectRowCountError as error:
             logging.debug("caught: {%s}", str(error))
             user_active: UserActive = UserActive(active=False)

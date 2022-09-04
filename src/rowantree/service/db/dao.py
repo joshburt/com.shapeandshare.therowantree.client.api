@@ -175,14 +175,14 @@ class DBDAO:
         return UserPopulation(population=rows[0][0])
 
     def user_stores_get(self, user_guid: str) -> UserStores:
-        stores: dict[str, UserStore] = {}
+        stores: list[UserStore] = []
 
         args: list[str, int] = [
             user_guid,
         ]
         rows: list[Tuple[str, Optional[str], int]] = self._call_proc("getUserStoresByGUID", args)
         for row in rows:
-            stores[row[0]] = UserStore(name=row[0], description=row[1], amount=row[2])
+            stores.append(UserStore(name=row[0], description=row[1], amount=row[2]))
         return UserStores(stores=stores)
 
     def user_transport(self, user_guid: str, location: str) -> UserFeature:

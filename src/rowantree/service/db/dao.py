@@ -9,6 +9,7 @@ import mysql.connector
 from mysql.connector import errorcode
 from mysql.connector.pooling import MySQLConnectionPool
 
+from ..contracts.dto.action_queue import ActionQueue
 from ..contracts.dto.user_event import UserEvent
 from ..contracts.dto.user_feature import UserFeature
 from ..contracts.dto.user_income import UserIncome
@@ -54,6 +55,7 @@ class DBDAO:
         rows: list[Tuple[str, Optional[str]]] = self._call_proc("getUserActiveFeatureStateDetailsByGUID", args)
         if len(rows) != 1:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
+
         feature_detail: UserFeature = UserFeature(name=rows[0][0], description=rows[0][1])
         return feature_detail
 
@@ -163,7 +165,6 @@ class DBDAO:
     def user_stores_get(self, user_guid: str) -> list[UserStore]:
         stores: list[UserStore] = []
 
-        # Used by client api
         args: list[str, int] = [
             user_guid,
         ]
@@ -184,10 +185,9 @@ class DBDAO:
 
     # Utility functions
 
-    def process_action_queue(self, action_queue) -> None:
-        # logging.debug(action_queue)
-        for action in action_queue:
-            self._call_proc(action[0], action[1])
+    def process_action_queue(self, action_queue: ActionQueue) -> None:
+        for action in action_queue.queue:
+            self._call_proc(action.name, action.arguments)
 
     # pylint: disable=duplicate-code
     def _call_proc(self, name: str, args: list, debug: bool = False) -> Optional[list[Tuple]]:

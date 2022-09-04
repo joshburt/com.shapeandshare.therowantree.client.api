@@ -1,4 +1,5 @@
-from ..contracts.dto.action_queue import ActionQueue
+from rowantree.contracts import ActionQueue
+
 from .abstract_controller import AbstractController
 
 

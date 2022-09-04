@@ -1,4 +1,5 @@
-from ..contracts.dto.user_feature import UserFeature
+from rowantree.contracts import UserFeature
+
 from ..contracts.requests.user_transport_request import UserTransportRequest
 from .abstract_controller import AbstractController
 

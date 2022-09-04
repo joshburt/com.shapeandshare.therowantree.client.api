@@ -9,12 +9,8 @@ import mysql.connector
 from mysql.connector import errorcode
 from mysql.connector.pooling import MySQLConnectionPool
 
-from ..contracts.dto.action_queue import ActionQueue
-from ..contracts.dto.user_event import UserEvent
-from ..contracts.dto.user_feature import UserFeature
-from ..contracts.dto.user_income import UserIncome
-from ..contracts.dto.user_notification import UserNotification
-from ..contracts.dto.user_store import UserStore
+from rowantree.contracts import ActionQueue, UserEvent, UserFeature, UserIncome, UserNotification, UserStore
+
 from ..contracts.requests.user_income_set_request import UserIncomeSetRequest
 from .incorrect_row_count_error import IncorrectRowCountError
 

@@ -1,4 +1,5 @@
-from ..contracts.dto.world_status import WorldStatus
+from rowantree.contracts import WorldStatus
+
 from ..controllers.abstract_controller import AbstractController
 
 

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from ..dto.user_income import UserIncome
+from rowantree.contracts import UserIncome
 
 
 class UserIncomeGetResponse(BaseModel):

@@ -7,9 +7,10 @@ from mysql.connector.pooling import MySQLConnectionPool
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 
+from rowantree.contracts import ActionQueue, UserFeature, WorldStatus
+from rowantree.contracts.dto.user.state import UserState
+
 from .config.server import ServerConfig
-from .contracts.dto.user_feature import UserFeature
-from .contracts.dto.user_state import UserState
 from .contracts.requests.merchant_transform_request import MerchantTransformRequest
 from .contracts.requests.user_active_set_request import UserActiveSetRequest
 from .contracts.requests.user_income_set_request import UserIncomeSetRequest
@@ -21,6 +22,7 @@ from .contracts.responses.user_income_get_response import UserIncomeGetResponse
 from .contracts.responses.user_merchant_transforms_get_response import UserMerchantTransformsGetResponse
 from .contracts.responses.user_population_get_response import UserPopulationGetResponse
 from .contracts.responses.user_stores_get_response import UserStoresGetResponse
+from .controllers.action_queue_process import ActionQueueProcessController
 from .controllers.merchant_transforms_perform import MerchantTransformPerformController
 from .controllers.user_active_get import UserActiveGetController
 from .controllers.user_active_set import UserActiveSetController
@@ -35,6 +37,7 @@ from .controllers.user_population_get import UserPopulationGetController
 from .controllers.user_state_get import UserStateGetController
 from .controllers.user_stores_get import UserStoresGetController
 from .controllers.user_transport import UserTransportController
+from .controllers.world_get import WorldStatusGetController
 from .db.dao import DBDAO
 from .db.utils import get_connect_pool
 
@@ -48,7 +51,7 @@ logging.basicConfig(
     datefmt="%m/%d/%Y %I:%M:%S %p",
     level=logging.DEBUG,
     filemode="w",
-    filename=f"{config.log_dir}/{os.uname()[1]}.therowantree.client.api.log",
+    filename=f"{config.log_dir}/{os.uname()[1]}.therowantree.service.log",
 )
 
 logging.debug("Starting server")
@@ -74,6 +77,8 @@ user_population_get_controller = UserPopulationGetController(dao=dao)
 user_transport_controller = UserTransportController(dao=dao)
 user_state_get_controller = UserStateGetController(dao=dao)
 user_stores_get_controller = UserStoresGetController(dao=dao)
+world_status_get_controller = WorldStatusGetController(dao=dao)
+action_queue_process_controller = ActionQueueProcessController(dao=dao)
 
 # Create the FastAPI application
 app = FastAPI()
@@ -208,3 +213,15 @@ async def user_state_get_handler(user_guid: str, api_access_key: str = Header(de
 async def user_stores_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserStoresGetResponse:
     authorize(api_access_key=api_access_key)
     return user_stores_get_controller.execute(user_guid=user_guid)
+
+
+@app.get("/v1/world", status_code=status.HTTP_200_OK)
+async def world_get_handler(api_access_key: str = Header(default=None)) -> WorldStatus:
+    authorize(api_access_key=api_access_key)
+    return world_status_get_controller.execute()
+
+
+@app.post("/v1/world/queue", status_code=status.HTTP_200_OK)
+async def action_queue_process_handler(action_queue: ActionQueue, api_access_key: str = Header(default=None)) -> None:
+    authorize(api_access_key=api_access_key)
+    return action_queue_process_controller.execute(action_queue=action_queue)

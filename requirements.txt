@@ -3,4 +3,5 @@ uvicorn[standard]
 pydantic
 mysql-connector-python
 starlette
-rowantree.contracts>=0.1
+rowantree.contracts
+rowantree.service.sdk

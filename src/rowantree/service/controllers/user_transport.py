@@ -1,6 +1,7 @@
 from rowantree.contracts import UserFeature
 
-from ..contracts.requests.user_transport_request import UserTransportRequest
+from rowantree.service.sdk.contracts.requests.user.transport import UserTransportRequest
+
 from .abstract_controller import AbstractController
 
 

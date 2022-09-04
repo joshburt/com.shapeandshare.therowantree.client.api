@@ -1,4 +1,5 @@
-from ..contracts.requests.user_income_set_request import UserIncomeSetRequest
+from rowantree.service.sdk.contracts.requests.user.income_set import UserIncomeSetRequest
+
 from ..controllers.abstract_controller import AbstractController
 
 

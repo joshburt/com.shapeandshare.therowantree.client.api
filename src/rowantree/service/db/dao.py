@@ -8,10 +8,19 @@ from typing import Optional, Tuple
 import mysql.connector
 from mysql.connector import errorcode
 from mysql.connector.pooling import MySQLConnectionPool
-
 from rowantree.contracts import ActionQueue, UserEvent, UserFeature, UserIncome, UserNotification, UserStore
+from rowantree.contracts.dto.merchant.merchant import Merchant
+from rowantree.contracts.dto.user.active import UserActive
+from rowantree.contracts.dto.user.features import UserFeatures
+from rowantree.contracts.dto.user.incomes import UserIncomes
+from rowantree.contracts.dto.user.merchants import UserMerchants
+from rowantree.contracts.dto.user.notifications import UserNotifications
+from rowantree.contracts.dto.user.population import UserPopulation
+from rowantree.contracts.dto.user.stores import UserStores
+from rowantree.contracts.dto.user.user import User
 
-from ..contracts.requests.user_income_set_request import UserIncomeSetRequest
+from rowantree.service.sdk.contracts.requests.user.income_set import UserIncomeSetRequest
+
 from .incorrect_row_count_error import IncorrectRowCountError
 
 
@@ -62,7 +71,7 @@ class DBDAO:
             my_active_users.append(response_tuple[0])
         return my_active_users
 
-    def user_active_state_get(self, user_guid: str) -> bool:
+    def user_active_state_get(self, user_guid: str) -> UserActive:
         args: list[str, int] = [
             user_guid,
         ]
@@ -73,7 +82,7 @@ class DBDAO:
             active: bool = False
         else:
             active: bool = True
-        return active
+        return UserActive(active=active)
 
     def user_active_state_set(self, user_guid: str, active: bool) -> None:
         args = [
@@ -85,11 +94,11 @@ class DBDAO:
             proc = "setUserInactiveByGUID"
         self._call_proc(name=proc, args=args)
 
-    def user_create(self) -> str:
+    def user_create(self) -> User:
         rows: list[Tuple[str]] = self._call_proc("createUser", [])
         if len(rows) != 1:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
-        return rows[0][0]
+        return User(guid=rows[0][0])
 
     def user_delete(self, user_guid: str) -> None:
         args: list = [
@@ -97,18 +106,18 @@ class DBDAO:
         ]
         self._call_proc("deleteUserByGUID", args)
 
-    def user_features_get(self, user_guid: str) -> list[str]:
-        features: list[str] = []
+    def user_features_get(self, user_guid: str) -> UserFeatures:
+        features: list[UserFeature] = []
 
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserFeaturesByGUID", args)
         for row in rows:
-            features.append(row[0])
-        return features
+            features.append(UserFeature(name=row[0]))
+        return UserFeatures(features=features)
 
-    def user_income_get(self, user_guid: str) -> list[UserIncome]:
+    def user_income_get(self, user_guid: str) -> UserIncomes:
         income_sources: list[UserIncome] = []
 
         args: list[str] = [
@@ -118,24 +127,24 @@ class DBDAO:
         for row in rows:
             income: UserIncome = UserIncome(amount=row[0], name=row[1], description=row[2])
             income_sources.append(income)
-        return income_sources
+        return UserIncomes(incomes=income_sources)
 
     def user_income_set(self, user_guid: str, transaction: UserIncomeSetRequest) -> None:
         args = [user_guid, transaction.income_source_name, transaction.amount]
         self._call_proc("deltaUserIncomeByNameAndGUID", args)
 
-    def user_merchant_transforms_get(self, user_guid: str) -> list[str]:
-        merchants: list[str] = []
+    def user_merchant_transforms_get(self, user_guid: str) -> UserMerchants:
+        merchants: list[Merchant] = []
 
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserMerchantTransformsByGUID", args)
         for row in rows:
-            merchants.append(row[0])
-        return merchants
+            merchants.append(Merchant(name=row[0]))
+        return UserMerchants(merchants=merchants)
 
-    def user_notifications_get(self, user_guid: str) -> list[UserNotification]:
+    def user_notifications_get(self, user_guid: str) -> UserNotifications:
         notifications: list[UserNotification] = []
 
         args: list = [
@@ -147,28 +156,27 @@ class DBDAO:
                 index=row[0], timestamp=row[1], event=UserEvent.parse_raw(row[2])
             )
             notifications.append(notification)
-        return notifications
+        return UserNotifications(notifications=notifications)
 
-    def user_population_by_guid_get(self, user_guid: str) -> int:
+    def user_population_by_guid_get(self, user_guid: str) -> UserPopulation:
         rows: list[Tuple[int]] = self._call_proc(
             "getUserPopulationByGUID",
             [
                 user_guid,
             ],
         )
-        return rows[0][0]
+        return UserPopulation(population=rows[0][0])
 
-    def user_stores_get(self, user_guid: str) -> list[UserStore]:
-        stores: list[UserStore] = []
+    def user_stores_get(self, user_guid: str) -> UserStores:
+        stores: dict[str, UserStore] = {}
 
         args: list[str, int] = [
             user_guid,
         ]
         rows: list[Tuple[str, Optional[str], int]] = self._call_proc("getUserStoresByGUID", args)
         for row in rows:
-            store: UserStore = UserStore(name=row[0], description=row[1], amount=row[2])
-            stores.append(store)
-        return stores
+            stores[row[0]] = UserStore(name=row[0], description=row[1], amount=row[2])
+        return UserStores(stores=stores)
 
     def user_transport(self, user_guid: str, location: str) -> UserFeature:
         args: list = [user_guid, location]

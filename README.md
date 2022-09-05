@@ -8,7 +8,7 @@ Deployment
 ----------
 **Start the service (development only):**
 ```
-uvicorn src.rowantree.service.main:app --reload
+uvicorn src.rowantree.service.handlers.main:app --reload
 ```
 
 **Production Deployment**

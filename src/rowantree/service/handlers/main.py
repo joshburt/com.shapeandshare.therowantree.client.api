@@ -7,39 +7,40 @@ from mysql.connector.pooling import MySQLConnectionPool
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 
-from rowantree.contracts import ActionQueue, UserFeature, WorldStatus
-from rowantree.contracts.dto.user.state import UserState
+from rowantree.contracts import (
+    ActionQueue,
+    User,
+    UserActive,
+    UserFeature,
+    UserFeatures,
+    UserIncomes,
+    UserMerchants,
+    UserPopulation,
+    UserState,
+    UserStores,
+    WorldStatus,
+)
+from rowantree.service.sdk import MerchantTransformRequest, UserIncomeSetRequest, UserTransportRequest
 
-from .config.server import ServerConfig
-from .contracts.requests.merchant_transform_request import MerchantTransformRequest
-from .contracts.requests.user_active_set_request import UserActiveSetRequest
-from .contracts.requests.user_income_set_request import UserIncomeSetRequest
-from .contracts.requests.user_transport_request import UserTransportRequest
-from .contracts.responses.user_active_get_response import UserActiveGetResponse
-from .contracts.responses.user_create_response import UserCreateResponse
-from .contracts.responses.user_features_get_response import UserFeaturesGetResponse
-from .contracts.responses.user_income_get_response import UserIncomeGetResponse
-from .contracts.responses.user_merchant_transforms_get_response import UserMerchantTransformsGetResponse
-from .contracts.responses.user_population_get_response import UserPopulationGetResponse
-from .contracts.responses.user_stores_get_response import UserStoresGetResponse
-from .controllers.action_queue_process import ActionQueueProcessController
-from .controllers.merchant_transforms_perform import MerchantTransformPerformController
-from .controllers.user_active_get import UserActiveGetController
-from .controllers.user_active_set import UserActiveSetController
-from .controllers.user_create import UserCreateController
-from .controllers.user_delete import UserDeleteController
-from .controllers.user_features_active_get import UserFeaturesActiveGetController
-from .controllers.user_features_get import UserFeaturesGetController
-from .controllers.user_income_get import UserIncomeGetController
-from .controllers.user_income_set import UserIncomeSetController
-from .controllers.user_merchant_transforms_get import UserMerchantTransformsGetController
-from .controllers.user_population_get import UserPopulationGetController
-from .controllers.user_state_get import UserStateGetController
-from .controllers.user_stores_get import UserStoresGetController
-from .controllers.user_transport import UserTransportController
-from .controllers.world_get import WorldStatusGetController
-from .db.dao import DBDAO
-from .db.utils import get_connect_pool
+from ..config.server import ServerConfig
+from ..controllers.action_queue_process import ActionQueueProcessController
+from ..controllers.merchant_transforms_perform import MerchantTransformPerformController
+from ..controllers.user_active_get import UserActiveGetController
+from ..controllers.user_active_set import UserActiveSetController
+from ..controllers.user_create import UserCreateController
+from ..controllers.user_delete import UserDeleteController
+from ..controllers.user_features_active_get import UserFeaturesActiveGetController
+from ..controllers.user_features_get import UserFeaturesGetController
+from ..controllers.user_income_get import UserIncomeGetController
+from ..controllers.user_income_set import UserIncomeSetController
+from ..controllers.user_merchant_transforms_get import UserMerchantTransformsGetController
+from ..controllers.user_population_get import UserPopulationGetController
+from ..controllers.user_state_get import UserStateGetController
+from ..controllers.user_stores_get import UserStoresGetController
+from ..controllers.user_transport import UserTransportController
+from ..controllers.world_get import WorldStatusGetController
+from ..db.dao import DBDAO
+from ..db.utils import get_connect_pool
 
 # Generating server configuration
 config: ServerConfig = ServerConfig()
@@ -122,14 +123,14 @@ async def merchant_transforms_perform_handler(
 @app.get("/v1/user/{user_guid}/merchant", status_code=status.HTTP_200_OK)
 async def user_merchant_transforms_get_handler(
     user_guid: str, api_access_key: str = Header(default=None)
-) -> UserMerchantTransformsGetResponse:
+) -> UserMerchants:
     authorize(api_access_key=api_access_key)
     return user_merchant_transforms_get_controller.execute(user_guid=user_guid)
 
 
 # Get User's Active State
 @app.get("/v1/user/{user_guid}/active", status_code=status.HTTP_200_OK)
-async def user_active_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserActiveGetResponse:
+async def user_active_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserActive:
     authorize(api_access_key=api_access_key)
     return user_active_get_controller.execute(user_guid=user_guid)
 
@@ -137,15 +138,15 @@ async def user_active_get_handler(user_guid: str, api_access_key: str = Header(d
 # Set User's Active State
 @app.post("/v1/user/{user_guid}/active", status_code=status.HTTP_200_OK)
 async def user_active_set_handler(
-    user_guid: str, request: UserActiveSetRequest, api_access_key: str = Header(default=None)
-) -> UserActiveSetRequest:
+    user_guid: str, request: UserActive, api_access_key: str = Header(default=None)
+) -> UserActive:
     authorize(api_access_key=api_access_key)
     return user_active_set_controller.execute(user_guid=user_guid, request=request)
 
 
 # Create User
 @app.post("/v1/user", status_code=status.HTTP_201_CREATED)
-async def user_create_handler(api_access_key: str = Header(default=None)) -> UserCreateResponse:
+async def user_create_handler(api_access_key: str = Header(default=None)) -> User:
     authorize(api_access_key=api_access_key)
     return user_create_controller.execute()
 
@@ -158,9 +159,7 @@ async def user_delete_handler(user_guid: str, api_access_key: str = Header(defau
 
 
 @app.get("/v1/user/{user_guid}/features", status_code=status.HTTP_200_OK)
-async def user_features_get_handler(
-    user_guid: str, api_access_key: str = Header(default=None)
-) -> UserFeaturesGetResponse:
+async def user_features_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserFeatures:
     authorize(api_access_key=api_access_key)
     return user_features_get_controller.execute(user_guid=user_guid)
 
@@ -174,7 +173,7 @@ async def user_features_active_get_handler(
 
 
 @app.get("/v1/user/{user_guid}/income", status_code=status.HTTP_200_OK)
-async def user_income_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserIncomeGetResponse:
+async def user_income_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserIncomes:
     authorize(api_access_key=api_access_key)
     return user_income_get_controller.execute(user_guid=user_guid)
 
@@ -188,9 +187,7 @@ async def user_income_set_handler(
 
 
 @app.get("/v1/user/{user_guid}/population", status_code=status.HTTP_200_OK)
-async def user_population_get_handler(
-    user_guid: str, api_access_key: str = Header(default=None)
-) -> UserPopulationGetResponse:
+async def user_population_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserPopulation:
     authorize(api_access_key=api_access_key)
     return user_population_get_controller.execute(user_guid=user_guid)
 
@@ -210,7 +207,7 @@ async def user_state_get_handler(user_guid: str, api_access_key: str = Header(de
 
 
 @app.get("/v1/user/{user_guid}/stores", status_code=status.HTTP_200_OK)
-async def user_stores_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserStoresGetResponse:
+async def user_stores_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserStores:
     authorize(api_access_key=api_access_key)
     return user_stores_get_controller.execute(user_guid=user_guid)
 
@@ -224,4 +221,4 @@ async def world_get_handler(api_access_key: str = Header(default=None)) -> World
 @app.post("/v1/world/queue", status_code=status.HTTP_200_OK)
 async def action_queue_process_handler(action_queue: ActionQueue, api_access_key: str = Header(default=None)) -> None:
     authorize(api_access_key=api_access_key)
-    return action_queue_process_controller.execute(action_queue=action_queue)
+    action_queue_process_controller.execute(action_queue=action_queue)

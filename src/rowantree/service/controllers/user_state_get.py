@@ -1,3 +1,5 @@
+""" User State Get Controller Definition """
+
 from starlette import status
 from starlette.exceptions import HTTPException
 
@@ -18,7 +20,31 @@ from .abstract_controller import AbstractController
 
 
 class UserStateGetController(AbstractController):
+    """
+    User State Get Controller
+    Gets the user game state.
+
+    Methods
+    -------
+    execute(self, user_guid: str) -> UserState
+        Executes the command.
+    """
+
     def execute(self, user_guid: str) -> UserState:
+        """
+        Gets the user game state.
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+
+        Returns
+        -------
+        user_state: UserState
+            The user state object.
+        """
+
         # User Game State
         try:
             active: UserActive = self.dao.user_active_state_get(user_guid=user_guid)

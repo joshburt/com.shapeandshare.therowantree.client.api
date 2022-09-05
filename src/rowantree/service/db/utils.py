@@ -1,3 +1,5 @@
+""" DB DAO Utilities """
+
 import logging
 import socket
 
@@ -9,6 +11,20 @@ from ..config.server import ServerConfig
 
 # pylint: disable=duplicate-code
 def get_connect_pool(config: ServerConfig) -> MySQLConnectionPool:
+    """
+    Gets a connection pool to the database.
+
+    Parameters
+    ----------
+    config: ServerConfig
+        The server configuration.
+
+    Returns
+    -------
+    cnxpool: MySQLConnectionPool
+        A connection pool to the database server.
+    """
+
     try:
         logging.debug("Connecting to database")
         cnxpool: MySQLConnectionPool = MySQLConnectionPool(

@@ -47,10 +47,35 @@ class DBDAO:
         self.cnxpool = cnxpool
 
     def merchant_transform_perform(self, user_guid: str, store_name: str) -> None:
+        """
+        Perform a merchant transform.
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+        store_name: str
+            The name of the store to perform the transform on.
+        """
+
         args: list = [user_guid, store_name]
         self._call_proc("peformMerchantTransformByGUID", args)
 
     def user_active_feature_get(self, user_guid: str) -> UserFeature:
+        """
+        Gets user's active feature/location.
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+
+        Returns
+        -------
+        user_feature: UserFeature
+            The active user feature.
+        """
+
         args: list = [
             user_guid,
         ]
@@ -61,6 +86,20 @@ class DBDAO:
         return feature_detail
 
     def user_active_feature_state_details_get(self, user_guid: str) -> UserFeature:
+        """
+        Get User Active Feature/Location Including Details.
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+
+        Returns
+        -------
+        user_feature: UserFeature
+            The active user feature/location with details.
+        """
+
         args: list = [
             user_guid,
         ]
@@ -72,13 +111,36 @@ class DBDAO:
         return feature_detail
 
     def users_active_get(self) -> list[str]:
-        my_active_users: list[str] = []
+        """
+        Get Active Users.
+
+        Returns
+        -------
+        active_user_guids: list[str]
+            A (unique) list of user guids which are active.
+        """
+
+        active_user_guids: list[str] = []
         rows: list[Tuple] = self._call_proc("getActiveUsers", [])
         for response_tuple in rows:
-            my_active_users.append(response_tuple[0])
-        return my_active_users
+            active_user_guids.append(response_tuple[0])
+        return active_user_guids
 
     def user_active_state_get(self, user_guid: str) -> UserActive:
+        """
+        Get user active state.
+
+        Parameters
+        ----------
+        user_guid: str
+        The target user guid.
+
+        Returns
+        -------
+        user_active: UserActive
+            The user active state.
+        """
+
         args: list[str, int] = [
             user_guid,
         ]
@@ -92,7 +154,18 @@ class DBDAO:
         return UserActive(active=active)
 
     def user_active_state_set(self, user_guid: str, active: bool) -> None:
-        args = [
+        """
+        Set user's active state.
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+        active: bool
+            The active state to set.
+        """
+
+        args: list = [
             user_guid,
         ]
         if active:
@@ -102,18 +175,50 @@ class DBDAO:
         self._call_proc(name=proc, args=args)
 
     def user_create(self) -> User:
+        """
+        Create a user.
+
+        Returns
+        -------
+        user: User
+            The created user.
+        """
+
         rows: list[Tuple[str]] = self._call_proc("createUser", [])
         if len(rows) != 1:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
         return User(guid=rows[0][0])
 
     def user_delete(self, user_guid: str) -> None:
+        """
+        Delete user.
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+        """
+
         args: list = [
             user_guid,
         ]
         self._call_proc("deleteUserByGUID", args)
 
     def user_features_get(self, user_guid: str) -> UserFeatures:
+        """
+        Get user features.
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+
+        Returns
+        -------
+        user_features: UserFeatures
+            User features object.
+        """
+
         features: list[UserFeature] = []
 
         args: list = [
@@ -125,6 +230,20 @@ class DBDAO:
         return UserFeatures(features=features)
 
     def user_income_get(self, user_guid: str) -> UserIncomes:
+        """
+        Get user income sources
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+
+        Returns
+        -------
+        user_incomes: UserIncomes
+            User incomes object.
+        """
+
         income_sources: list[UserIncome] = []
 
         args: list[str] = [
@@ -137,10 +256,35 @@ class DBDAO:
         return UserIncomes(incomes=income_sources)
 
     def user_income_set(self, user_guid: str, transaction: UserIncomeSetRequest) -> None:
+        """
+        Set user income source.
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+        transaction: UserIncomeSetRequest
+            The user income set request.
+        """
+
         args = [user_guid, transaction.income_source_name, transaction.amount]
         self._call_proc("deltaUserIncomeByNameAndGUID", args)
 
     def user_merchant_transforms_get(self, user_guid: str) -> UserMerchants:
+        """
+        Get User merchant transforms [currently available].
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+
+        Returns
+        -------
+        user_merchants: UserMerchants
+            User merchants object.
+        """
+
         merchants: list[Merchant] = []
 
         args: list = [
@@ -152,6 +296,21 @@ class DBDAO:
         return UserMerchants(merchants=merchants)
 
     def user_notifications_get(self, user_guid: str) -> UserNotifications:
+        """
+        Get User notifications.
+        Returns the most recent (new) user notifications.
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+
+        Returns
+        -------
+        user_notifications: UserNotifications
+            New user notifications.
+        """
+
         notifications: list[UserNotification] = []
 
         args: list = [
@@ -166,6 +325,20 @@ class DBDAO:
         return UserNotifications(notifications=notifications)
 
     def user_population_by_guid_get(self, user_guid: str) -> UserPopulation:
+        """
+        Get user population (by GUID)
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+
+        Returns
+        -------
+        user_population: UserPopulation
+            User population object.
+        """
+
         rows: list[Tuple[int]] = self._call_proc(
             "getUserPopulationByGUID",
             [
@@ -175,6 +348,20 @@ class DBDAO:
         return UserPopulation(population=rows[0][0])
 
     def user_stores_get(self, user_guid: str) -> UserStores:
+        """
+        Get user stores.
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+
+        Returns
+        -------
+        user_stores: UserStores
+            User Stores Object
+        """
+
         stores: list[UserStore] = []
 
         args: list[str, int] = [
@@ -186,6 +373,22 @@ class DBDAO:
         return UserStores(stores=stores)
 
     def user_transport(self, user_guid: str, location: str) -> UserFeature:
+        """
+        Perform User Transport.
+
+        Parameters
+        ----------
+        user_guid: str
+            The target user guid.
+        location: str
+            The name of the feature/location to transport the user to.
+
+        Returns
+        -------
+        user_feature: UserFeature
+            The active user feature.
+        """
+
         args: list = [user_guid, location]
         rows: list[Tuple[str, Optional[str]]] = self._call_proc("transportUserByGUID", args)
         if len(rows) != 1:
@@ -197,11 +400,38 @@ class DBDAO:
     # Utility functions
 
     def process_action_queue(self, action_queue: ActionQueue) -> None:
+        """
+        Process the provided action queue.
+
+        Parameters
+        ----------
+        action_queue: ActionQueue
+            The action queue to process.
+        """
+
         for action in action_queue.queue:
             self._call_proc(action.name, action.arguments)
 
     # pylint: disable=duplicate-code
     def _call_proc(self, name: str, args: list, debug: bool = False) -> Optional[list[Tuple]]:
+        """
+        Perform a stored procedure call.
+
+        Parameters
+        ----------
+        name: str
+            The name of the stored procedure to call.
+        args: list
+            The arguments to pass to the stored procedure.
+        debug: bool
+            Whether to log debug details about the call.
+
+        Returns
+        -------
+        results: Optional[list[Tuple]]
+            An optional list of tuples (rows) from the call.
+        """
+
         if debug:
             logging.debug("[DAO] [Stored Proc Call Details] Name: {%s}, Arguments: {%s}", name, args)
         rows: Optional[list[Tuple]] = None

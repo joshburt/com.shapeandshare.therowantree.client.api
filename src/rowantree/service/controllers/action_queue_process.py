@@ -16,14 +16,14 @@ class ActionQueueProcessController(AbstractController):
         Execute the controller.
     """
 
-    def execute(self, action_queue: ActionQueue) -> None:
+    def execute(self, request: ActionQueue) -> None:
         """
         Processes the requested action queue.
 
         Parameters
         ----------
-        action_queue: ActionQueue
+        request: ActionQueue
             The process action queue.
         """
 
-        self.dao.process_action_queue(action_queue=action_queue)
+        self.dao.process_action_queue(action_queue=request)

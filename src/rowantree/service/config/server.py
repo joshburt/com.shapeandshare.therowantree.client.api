@@ -1,3 +1,5 @@
+""" Service Config Definition """
+
 import configparser
 import os
 from typing import Optional
@@ -6,6 +8,25 @@ from pydantic import BaseModel
 
 
 class ServerConfig(BaseModel):
+    """
+    Service Configuration
+
+    Attributes
+    ----------
+    log_dir: Optional[str]
+        The log directory.
+    access_key: Optional[str]
+        The API access key.
+    database_server: Optional[str]
+        The database server hostname
+    database_name: Optional[str]
+        The database name
+    database_username: Optional[str]
+        The database service account username
+    database_password: Optional[str]
+        The database service account password
+    """
+
     log_dir: Optional[str]
 
     access_key: Optional[str]

@@ -8,6 +8,7 @@ from typing import Optional, Tuple
 import mysql.connector
 from mysql.connector import errorcode
 from mysql.connector.pooling import MySQLConnectionPool
+
 from rowantree.contracts import (
     ActionQueue,
     Merchant,
@@ -25,7 +26,6 @@ from rowantree.contracts import (
     UserStore,
     UserStores,
 )
-
 from rowantree.service.sdk import UserIncomeSetRequest
 
 from .incorrect_row_count_error import IncorrectRowCountError

@@ -1,3 +1,6 @@
+from starlette import status
+from starlette.exceptions import HTTPException
+
 from rowantree.contracts import (
     UserActive,
     UserFeature,
@@ -9,8 +12,6 @@ from rowantree.contracts import (
     UserState,
     UserStores,
 )
-from starlette import status
-from starlette.exceptions import HTTPException
 
 from ..db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController

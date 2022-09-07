@@ -16,7 +16,7 @@ class UserCreateController(AbstractController):
         Executes the command.
     """
 
-    def execute(self) -> User:
+    def execute(self, request: str) -> User:
         """
         Creates a user.
 
@@ -26,4 +26,4 @@ class UserCreateController(AbstractController):
             The newly created user.
         """
 
-        return self.dao.user_create()
+        return self.dao.user_create_by_guid(user_guid=request)

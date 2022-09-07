@@ -3,15 +3,13 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Optional
 
-from fastapi import Depends, FastAPI, Header, status
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+from fastapi import Depends, FastAPI, status
 from mysql.connector.pooling import MySQLConnectionPool
-from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 
+from rowantree.auth.sdk.common.depends import is_admin, is_enabled
+from rowantree.auth.sdk.contracts.dto.token_claims import TokenClaims
 from rowantree.contracts import (
     ActionQueue,
     User,
@@ -28,7 +26,6 @@ from rowantree.contracts import (
 from rowantree.service.sdk import MerchantTransformRequest, UserIncomeSetRequest, UserTransportRequest
 
 from ..config.server import ServerConfig
-from ..contracts.dto.token_claims import TokenClaims
 from ..controllers.action_queue_process import ActionQueueProcessController
 from ..controllers.merchant_transforms_perform import MerchantTransformPerformController
 from ..controllers.user_active_get import UserActiveGetController
@@ -101,39 +98,40 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{config.auth_endpoint}/token")
-
-
-def get_claims(token: str) -> TokenClaims:
-    credentials_exception: HTTPException = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload: dict = jwt.decode(token, config.secret_key, algorithms=[config.algorithm], issuer=config.issuer)
-        guid: Optional[str] = payload.get("sub")
-        if guid is None:
-            raise credentials_exception
-        return TokenClaims(**payload)
-    except JWTError:
-        raise credentials_exception
-
-
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> TokenClaims:
-    return get_claims(token=token)
-
-
-async def is_enabled(token_claims: TokenClaims = Depends(get_current_user)) -> TokenClaims:
-    if token_claims.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return token_claims
-
-
-async def is_admin(token_claims: TokenClaims = Depends(is_enabled)) -> TokenClaims:
-    if token_claims.admin:
-        raise HTTPException(status_code=400, detail="Insufficient Permissions")
-    return token_claims
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="")
+#
+# def get_claims(token: str) -> TokenClaims:
+#     credentials_exception: HTTPException = HTTPException(
+#         status_code=status.HTTP_401_UNAUTHORIZED,
+#         detail="Could not validate credentials",
+#         headers={"WWW-Authenticate": "Bearer"},
+#     )
+#     try:
+#         payload: dict = jwt.decode(token, config.secret_key, algorithms=[config.algorithm], issuer=config.issuer)
+#         issuer: Optional[str] = payload.get("iss")
+#         guid: Optional[str] = payload.get("sub")
+#         if issuer != config.issuer or guid is None:
+#             logging.debug(f"Received issuer: {issuer}, expected: {config.issuer}, guid was: {guid}")
+#             raise credentials_exception
+#         return TokenClaims(**payload)
+#     except JWTError:
+#         raise credentials_exception
+#
+#
+# async def get_current_user(token: str = Depends(oauth2_scheme)) -> TokenClaims:
+#     return get_claims(token=token)
+#
+#
+# async def is_enabled(token_claims: TokenClaims = Depends(get_current_user)) -> TokenClaims:
+#     if token_claims.disabled:
+#         raise HTTPException(status_code=400, detail="Inactive user")
+#     return token_claims
+#
+#
+# async def is_admin(token_claims: TokenClaims = Depends(is_enabled)) -> TokenClaims:
+#     if token_claims.admin:
+#         raise HTTPException(status_code=400, detail="Insufficient Permissions")
+#     return token_claims
 
 
 # Define our handlers

@@ -32,7 +32,6 @@ class ServerConfig(BaseModel):
     secret_key: Optional[str]
     algorithm: Optional[str]
     issuer: Optional[str]
-    auth_endpoint: Optional[str]
 
     database_server: Optional[str]
     database_name: Optional[str]
@@ -51,7 +50,6 @@ class ServerConfig(BaseModel):
         self.secret_key = config.get("SERVER", "secret_key")
         self.algorithm = config.get("SERVER", "algorithm")
         self.issuer = config.get("SERVER", "issuer")
-        self.auth_endpoint = config.get("SERVER", "auth_endpoint")
 
         # Database Options
         self.database_server = config.get("DATABASE", "server")
@@ -70,9 +68,6 @@ class ServerConfig(BaseModel):
 
         if "ACCESS_TOKEN_ISSUER" in os.environ:
             self.issuer = os.environ["ACCESS_TOKEN_ISSUER"]
-
-        if "ACCESS_AUTH_ENDPOINT" in os.environ:
-            self.auth_endpoint = os.environ["ACCESS_AUTH_ENDPOINT"]
 
         if "DATABASE_SERVER" in os.environ:
             self.database_server = os.environ["DATABASE_SERVER"]

@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Optional, Tuple
 
 import mysql.connector
-from mysql.connector import errorcode
+from mysql.connector import IntegrityError, errorcode
 from mysql.connector.pooling import MySQLConnectionPool
 
 from rowantree.contracts import (
@@ -144,7 +144,7 @@ class DBDAO:
         args: list[str, int] = [
             user_guid,
         ]
-        rows: list[Tuple[int]] = self._call_proc("getUserActivityStateByGUID", args, True)
+        rows: list[Tuple[int]] = self._call_proc("getUserActivityStateByGUID", args)
         if len(rows) != 1:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
         if rows[0][0] == 0:
@@ -186,6 +186,26 @@ class DBDAO:
 
         rows: list[Tuple[str]] = self._call_proc("createUser", [])
         if len(rows) != 1:
+            raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
+        return User(guid=rows[0][0])
+
+    def user_create_by_guid(self, user_guid: str) -> User:
+        """
+        Create a user.
+
+        Returns
+        -------
+        user: User
+            The created user.
+        """
+
+        args = [user_guid]
+        try:
+            rows: Optional[list[Tuple[str]]] = self._call_proc("createUserByGUID", args, True)
+        except IntegrityError as error:
+            logging.debug(f"User already exists: {user_guid}, {str(error)}")
+            return User(guid=user_guid)
+        if rows is None or len(rows) != 1:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
         return User(guid=rows[0][0])
 

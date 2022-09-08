@@ -4,11 +4,12 @@ import logging
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, Header, status
+from fastapi import Depends, FastAPI, status
 from mysql.connector.pooling import MySQLConnectionPool
-from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 
+from rowantree.auth.sdk.common.depends import is_admin, is_enabled
+from rowantree.auth.sdk.contracts.dto.token_claims import TokenClaims
 from rowantree.contracts import (
     ActionQueue,
     User,
@@ -97,21 +98,40 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# Naive auth system until idp can be introduced
-def authorize(api_access_key: str) -> None:
-    """
-    Performs naive authorization.
-
-    Parameters
-    ----------
-    api_access_key: str
-        The external provided access key to validate.
-    """
-
-    if api_access_key != config.access_key:
-        logging.debug("bad access key")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Bad Access Key")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="")
+#
+# def get_claims(token: str) -> TokenClaims:
+#     credentials_exception: HTTPException = HTTPException(
+#         status_code=status.HTTP_401_UNAUTHORIZED,
+#         detail="Could not validate credentials",
+#         headers={"WWW-Authenticate": "Bearer"},
+#     )
+#     try:
+#         payload: dict = jwt.decode(token, config.secret_key, algorithms=[config.algorithm], issuer=config.issuer)
+#         issuer: Optional[str] = payload.get("iss")
+#         guid: Optional[str] = payload.get("sub")
+#         if issuer != config.issuer or guid is None:
+#             logging.debug(f"Received issuer: {issuer}, expected: {config.issuer}, guid was: {guid}")
+#             raise credentials_exception
+#         return TokenClaims(**payload)
+#     except JWTError:
+#         raise credentials_exception
+#
+#
+# async def get_current_user(token: str = Depends(oauth2_scheme)) -> TokenClaims:
+#     return get_claims(token=token)
+#
+#
+# async def is_enabled(token_claims: TokenClaims = Depends(get_current_user)) -> TokenClaims:
+#     if token_claims.disabled:
+#         raise HTTPException(status_code=400, detail="Inactive user")
+#     return token_claims
+#
+#
+# async def is_admin(token_claims: TokenClaims = Depends(is_enabled)) -> TokenClaims:
+#     if token_claims.admin:
+#         raise HTTPException(status_code=400, detail="Insufficient Permissions")
+#     return token_claims
 
 
 # Define our handlers
@@ -135,7 +155,7 @@ async def health_plain() -> bool:
 
 @app.post("/v1/user/{user_guid}/merchant", status_code=status.HTTP_201_CREATED)
 async def merchant_transforms_perform_handler(
-    user_guid: str, request: MerchantTransformRequest, api_access_key: str = Header(default=None)
+    user_guid: str, request: MerchantTransformRequest, token_claims: TokenClaims = Depends(is_enabled)
 ) -> None:
     """
     Perform Merchant Exchange (Transform) For User
@@ -164,15 +184,11 @@ async def merchant_transforms_perform_handler(
         404 - User not found
         500 - Server failure
     """
-
-    authorize(api_access_key=api_access_key)
     merchant_transforms_perform_controller.execute(user_guid=user_guid, request=request)
 
 
 @app.get("/v1/user/{user_guid}/merchant", status_code=status.HTTP_200_OK)
-async def user_merchant_transforms_get_handler(
-    user_guid: str, api_access_key: str = Header(default=None)
-) -> UserMerchants:
+async def user_merchant_transforms_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserMerchants:
     """
     Gets user merchants.
     [GET] /v1/user/{user_guid}/merchant
@@ -199,13 +215,12 @@ async def user_merchant_transforms_get_handler(
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     return user_merchant_transforms_get_controller.execute(user_guid=user_guid)
 
 
 # Get User's Active State
 @app.get("/v1/user/{user_guid}/active", status_code=status.HTTP_200_OK)
-async def user_active_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserActive:
+async def user_active_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserActive:
     """
     Gets user's active state.
     [GET] /v1/user/{user_guid}/active
@@ -232,15 +247,12 @@ async def user_active_get_handler(user_guid: str, api_access_key: str = Header(d
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     return user_active_get_controller.execute(user_guid=user_guid)
 
 
 # Set User's Active State
 @app.post("/v1/user/{user_guid}/active", status_code=status.HTTP_200_OK)
-async def user_active_set_handler(
-    user_guid: str, request: UserActive, api_access_key: str = Header(default=None)
-) -> UserActive:
+async def user_active_set_handler(user_guid: str, request: UserActive, token_claims: TokenClaims = Depends(is_enabled)) -> UserActive:
     """
     Sets user's active state.
     [POST] /v1/user/{user_guid}/active
@@ -267,13 +279,12 @@ async def user_active_set_handler(
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     return user_active_set_controller.execute(user_guid=user_guid, request=request)
 
 
 # Create User
-@app.post("/v1/user", status_code=status.HTTP_201_CREATED)
-async def user_create_handler(api_access_key: str = Header(default=None)) -> User:
+@app.post("/v1/user/{user_guid}", status_code=status.HTTP_201_CREATED)
+async def user_create_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> User:
     """
     Creates a user.
     [POST] /v1/user
@@ -294,13 +305,12 @@ async def user_create_handler(api_access_key: str = Header(default=None)) -> Use
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
-    return user_create_controller.execute()
+    return user_create_controller.execute(request=user_guid)
 
 
 # Delete User
 @app.delete("/v1/user/{user_guid}", status_code=status.HTTP_200_OK)
-async def user_delete_handler(user_guid: str, api_access_key: str = Header(default=None)) -> None:
+async def user_delete_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> None:
     """
     Deletes a user.
     [DELETE] /v1/user/{user_guid}
@@ -324,12 +334,11 @@ async def user_delete_handler(user_guid: str, api_access_key: str = Header(defau
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     user_delete_controller.execute(user_guid=user_guid)
 
 
 @app.get("/v1/user/{user_guid}/features", status_code=status.HTTP_200_OK)
-async def user_features_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserFeatures:
+async def user_features_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserFeatures:
     """
     Get User Features.
     [GET] /v1/user/{user_guid}/features
@@ -356,13 +365,12 @@ async def user_features_get_handler(user_guid: str, api_access_key: str = Header
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     return user_features_get_controller.execute(user_guid=user_guid)
 
 
 @app.get("/v1/user/{user_guid}/features/active", status_code=status.HTTP_200_OK)
 async def user_features_active_get_handler(
-    user_guid: str, api_access_key: str = Header(default=None), details: bool = False
+    user_guid: str, token_claims: TokenClaims = Depends(is_enabled), details: bool = False
 ) -> UserFeature:
     """
     Get Active User Features.
@@ -390,12 +398,11 @@ async def user_features_active_get_handler(
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     return user_features_active_get_controller.execute(user_guid=user_guid, details=details)
 
 
 @app.get("/v1/user/{user_guid}/income", status_code=status.HTTP_200_OK)
-async def user_income_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserIncomes:
+async def user_income_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserIncomes:
     """
     Get User Income Sources.
     [GET] /v1/user/{user_guid}/income
@@ -422,13 +429,12 @@ async def user_income_get_handler(user_guid: str, api_access_key: str = Header(d
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     return user_income_get_controller.execute(user_guid=user_guid)
 
 
 @app.post("/v1/user/{user_guid}/income", status_code=status.HTTP_200_OK)
 async def user_income_set_handler(
-    user_guid: str, request: UserIncomeSetRequest, api_access_key: str = Header(default=None)
+    user_guid:str, request: UserIncomeSetRequest, token_claims: TokenClaims = Depends(is_enabled)
 ) -> None:
     """
     Set User Income Source.
@@ -458,12 +464,11 @@ async def user_income_set_handler(
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     user_income_set_controller.execute(user_guid=user_guid, request=request)
 
 
 @app.get("/v1/user/{user_guid}/population", status_code=status.HTTP_200_OK)
-async def user_population_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserPopulation:
+async def user_population_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserPopulation:
     """
     Set User Population.
     [GET] /v1/user/{user_guid}/population
@@ -490,13 +495,12 @@ async def user_population_get_handler(user_guid: str, api_access_key: str = Head
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     return user_population_get_controller.execute(user_guid=user_guid)
 
 
 @app.post("/v1/user/{user_guid}/transport", status_code=status.HTTP_200_OK)
 async def user_transport_handler(
-    user_guid: str, request: UserTransportRequest, api_access_key: str = Header(default=None)
+    user_guid: str, request: UserTransportRequest, token_claims: TokenClaims = Depends(is_enabled)
 ) -> UserFeature:
     """
     Transport User
@@ -529,12 +533,11 @@ async def user_transport_handler(
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     return user_transport_controller.execute(user_guid=user_guid, request=request)
 
 
 @app.get("/v1/user/{user_guid}/state", status_code=status.HTTP_200_OK)
-async def user_state_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserState:
+async def user_state_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserState:
     """
     Get User State
     [GET] /v1/user/{user_guid}/state
@@ -561,12 +564,11 @@ async def user_state_get_handler(user_guid: str, api_access_key: str = Header(de
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     return user_state_get_controller.execute(user_guid=user_guid)
 
 
 @app.get("/v1/user/{user_guid}/stores", status_code=status.HTTP_200_OK)
-async def user_stores_get_handler(user_guid: str, api_access_key: str = Header(default=None)) -> UserStores:
+async def user_stores_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserStores:
     """
     Get User Stores
     [GET] /v1/user/{user_guid}/stores
@@ -593,12 +595,11 @@ async def user_stores_get_handler(user_guid: str, api_access_key: str = Header(d
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     return user_stores_get_controller.execute(user_guid=user_guid)
 
 
 @app.get("/v1/world", status_code=status.HTTP_200_OK)
-async def world_get_handler(api_access_key: str = Header(default=None)) -> WorldStatus:
+async def world_get_handler(token_claims: TokenClaims = Depends(is_admin)) -> WorldStatus:
     """
     Get World Status
     [GET] /v1/world
@@ -619,12 +620,11 @@ async def world_get_handler(api_access_key: str = Header(default=None)) -> World
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     return world_status_get_controller.execute()
 
 
 @app.post("/v1/world/queue", status_code=status.HTTP_200_OK)
-async def action_queue_process_handler(request: ActionQueue, api_access_key: str = Header(default=None)) -> None:
+async def action_queue_process_handler(request: ActionQueue, token_claims: TokenClaims = Depends(is_admin)) -> None:
     """
     Progress Action Queue
     [POST] /v1/world/queue
@@ -647,5 +647,4 @@ async def action_queue_process_handler(request: ActionQueue, api_access_key: str
         500 - Server failure
     """
 
-    authorize(api_access_key=api_access_key)
     action_queue_process_controller.execute(request=request)

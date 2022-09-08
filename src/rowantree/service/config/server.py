@@ -29,7 +29,9 @@ class ServerConfig(BaseModel):
 
     log_dir: Optional[str]
 
-    access_key: Optional[str]
+    secret_key: Optional[str]
+    algorithm: Optional[str]
+    issuer: Optional[str]
 
     database_server: Optional[str]
     database_name: Optional[str]
@@ -45,7 +47,9 @@ class ServerConfig(BaseModel):
         self.log_dir = config.get("DIRECTORY", "logs_dir")
 
         # Server Options
-        self.access_key = config.get("SERVER", "access_key")
+        self.secret_key = config.get("SERVER", "secret_key")
+        self.algorithm = config.get("SERVER", "algorithm")
+        self.issuer = config.get("SERVER", "issuer")
 
         # Database Options
         self.database_server = config.get("DATABASE", "server")
@@ -56,8 +60,14 @@ class ServerConfig(BaseModel):
         if "LOGS_DIR" in os.environ:
             self.log_dir = os.environ["LOGS_DIR"]
 
-        if "ACCESS_KEY" in os.environ:
-            self.access_key = os.environ["ACCESS_KEY"]
+        if "ACCESS_TOKEN_SECRET_KEY" in os.environ:
+            self.secret_key = os.environ["SECRET_KEY"]
+
+        if "ACCESS_TOKEN_ALGORITHM" in os.environ:
+            self.algorithm = os.environ["ALGORITHM"]
+
+        if "ACCESS_TOKEN_ISSUER" in os.environ:
+            self.issuer = os.environ["ACCESS_TOKEN_ISSUER"]
 
         if "DATABASE_SERVER" in os.environ:
             self.database_server = os.environ["DATABASE_SERVER"]

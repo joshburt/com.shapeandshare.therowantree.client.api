@@ -153,9 +153,9 @@ async def health_plain() -> bool:
     return True
 
 
-@app.post("/v1/user/merchant", status_code=status.HTTP_201_CREATED)
+@app.post("/v1/user/{user_guid}/merchant", status_code=status.HTTP_201_CREATED)
 async def merchant_transforms_perform_handler(
-    request: MerchantTransformRequest, token_claims: TokenClaims = Depends(is_enabled)
+    user_guid: str, request: MerchantTransformRequest, token_claims: TokenClaims = Depends(is_enabled)
 ) -> None:
     """
     Perform Merchant Exchange (Transform) For User
@@ -184,11 +184,11 @@ async def merchant_transforms_perform_handler(
         404 - User not found
         500 - Server failure
     """
-    merchant_transforms_perform_controller.execute(user_guid=token_claims.sub, request=request)
+    merchant_transforms_perform_controller.execute(user_guid=user_guid, request=request)
 
 
-@app.get("/v1/user/merchant", status_code=status.HTTP_200_OK)
-async def user_merchant_transforms_get_handler(token_claims: TokenClaims = Depends(is_enabled)) -> UserMerchants:
+@app.get("/v1/user/{user_guid}/merchant", status_code=status.HTTP_200_OK)
+async def user_merchant_transforms_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserMerchants:
     """
     Gets user merchants.
     [GET] /v1/user/{user_guid}/merchant
@@ -215,12 +215,12 @@ async def user_merchant_transforms_get_handler(token_claims: TokenClaims = Depen
         500 - Server failure
     """
 
-    return user_merchant_transforms_get_controller.execute(user_guid=token_claims.sub)
+    return user_merchant_transforms_get_controller.execute(user_guid=user_guid)
 
 
 # Get User's Active State
-@app.get("/v1/user/active", status_code=status.HTTP_200_OK)
-async def user_active_get_handler(token_claims: TokenClaims = Depends(is_enabled)) -> UserActive:
+@app.get("/v1/user/{user_guid}/active", status_code=status.HTTP_200_OK)
+async def user_active_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserActive:
     """
     Gets user's active state.
     [GET] /v1/user/{user_guid}/active
@@ -247,12 +247,12 @@ async def user_active_get_handler(token_claims: TokenClaims = Depends(is_enabled
         500 - Server failure
     """
 
-    return user_active_get_controller.execute(user_guid=token_claims.sub)
+    return user_active_get_controller.execute(user_guid=user_guid)
 
 
 # Set User's Active State
-@app.post("/v1/user/active", status_code=status.HTTP_200_OK)
-async def user_active_set_handler(request: UserActive, token_claims: TokenClaims = Depends(is_enabled)) -> UserActive:
+@app.post("/v1/user/{user_guid}/active", status_code=status.HTTP_200_OK)
+async def user_active_set_handler(user_guid: str, request: UserActive, token_claims: TokenClaims = Depends(is_enabled)) -> UserActive:
     """
     Sets user's active state.
     [POST] /v1/user/{user_guid}/active
@@ -279,12 +279,12 @@ async def user_active_set_handler(request: UserActive, token_claims: TokenClaims
         500 - Server failure
     """
 
-    return user_active_set_controller.execute(user_guid=token_claims.sub, request=request)
+    return user_active_set_controller.execute(user_guid=user_guid, request=request)
 
 
 # Create User
-@app.post("/v1/user", status_code=status.HTTP_201_CREATED)
-async def user_create_handler(token_claims: TokenClaims = Depends(is_enabled)) -> User:
+@app.post("/v1/user/{user_guid}", status_code=status.HTTP_201_CREATED)
+async def user_create_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> User:
     """
     Creates a user.
     [POST] /v1/user
@@ -305,12 +305,12 @@ async def user_create_handler(token_claims: TokenClaims = Depends(is_enabled)) -
         500 - Server failure
     """
 
-    return user_create_controller.execute(request=token_claims.sub)
+    return user_create_controller.execute(request=user_guid)
 
 
 # Delete User
-@app.delete("/v1/user", status_code=status.HTTP_200_OK)
-async def user_delete_handler(token_claims: TokenClaims = Depends(is_enabled)) -> None:
+@app.delete("/v1/user/{user_guid}", status_code=status.HTTP_200_OK)
+async def user_delete_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> None:
     """
     Deletes a user.
     [DELETE] /v1/user/{user_guid}
@@ -334,11 +334,11 @@ async def user_delete_handler(token_claims: TokenClaims = Depends(is_enabled)) -
         500 - Server failure
     """
 
-    user_delete_controller.execute(user_guid=token_claims.sub)
+    user_delete_controller.execute(user_guid=user_guid)
 
 
-@app.get("/v1/user/features", status_code=status.HTTP_200_OK)
-async def user_features_get_handler(token_claims: TokenClaims = Depends(is_enabled)) -> UserFeatures:
+@app.get("/v1/user/{user_guid}/features", status_code=status.HTTP_200_OK)
+async def user_features_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserFeatures:
     """
     Get User Features.
     [GET] /v1/user/{user_guid}/features
@@ -365,12 +365,12 @@ async def user_features_get_handler(token_claims: TokenClaims = Depends(is_enabl
         500 - Server failure
     """
 
-    return user_features_get_controller.execute(user_guid=token_claims.sub)
+    return user_features_get_controller.execute(user_guid=user_guid)
 
 
-@app.get("/v1/user/features/active", status_code=status.HTTP_200_OK)
+@app.get("/v1/user/{user_guid}/features/active", status_code=status.HTTP_200_OK)
 async def user_features_active_get_handler(
-    token_claims: TokenClaims = Depends(is_enabled), details: bool = False
+    user_guid: str, token_claims: TokenClaims = Depends(is_enabled), details: bool = False
 ) -> UserFeature:
     """
     Get Active User Features.
@@ -398,11 +398,11 @@ async def user_features_active_get_handler(
         500 - Server failure
     """
 
-    return user_features_active_get_controller.execute(user_guid=token_claims.sub, details=details)
+    return user_features_active_get_controller.execute(user_guid=user_guid, details=details)
 
 
-@app.get("/v1/user/income", status_code=status.HTTP_200_OK)
-async def user_income_get_handler(token_claims: TokenClaims = Depends(is_enabled)) -> UserIncomes:
+@app.get("/v1/user/{user_guid}/income", status_code=status.HTTP_200_OK)
+async def user_income_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserIncomes:
     """
     Get User Income Sources.
     [GET] /v1/user/{user_guid}/income
@@ -429,12 +429,12 @@ async def user_income_get_handler(token_claims: TokenClaims = Depends(is_enabled
         500 - Server failure
     """
 
-    return user_income_get_controller.execute(user_guid=token_claims.sub)
+    return user_income_get_controller.execute(user_guid=user_guid)
 
 
-@app.post("/v1/user/income", status_code=status.HTTP_200_OK)
+@app.post("/v1/user/{user_guid}/income", status_code=status.HTTP_200_OK)
 async def user_income_set_handler(
-    request: UserIncomeSetRequest, token_claims: TokenClaims = Depends(is_enabled)
+    user_guid:str, request: UserIncomeSetRequest, token_claims: TokenClaims = Depends(is_enabled)
 ) -> None:
     """
     Set User Income Source.
@@ -464,11 +464,11 @@ async def user_income_set_handler(
         500 - Server failure
     """
 
-    user_income_set_controller.execute(user_guid=token_claims.sub, request=request)
+    user_income_set_controller.execute(user_guid=user_guid, request=request)
 
 
-@app.get("/v1/user/population", status_code=status.HTTP_200_OK)
-async def user_population_get_handler(token_claims: TokenClaims = Depends(is_enabled)) -> UserPopulation:
+@app.get("/v1/user/{user_guid}/population", status_code=status.HTTP_200_OK)
+async def user_population_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserPopulation:
     """
     Set User Population.
     [GET] /v1/user/{user_guid}/population
@@ -495,12 +495,12 @@ async def user_population_get_handler(token_claims: TokenClaims = Depends(is_ena
         500 - Server failure
     """
 
-    return user_population_get_controller.execute(user_guid=token_claims.sub)
+    return user_population_get_controller.execute(user_guid=user_guid)
 
 
-@app.post("/v1/user/transport", status_code=status.HTTP_200_OK)
+@app.post("/v1/user/{user_guid}/transport", status_code=status.HTTP_200_OK)
 async def user_transport_handler(
-    request: UserTransportRequest, token_claims: TokenClaims = Depends(is_enabled)
+    user_guid: str, request: UserTransportRequest, token_claims: TokenClaims = Depends(is_enabled)
 ) -> UserFeature:
     """
     Transport User
@@ -533,11 +533,11 @@ async def user_transport_handler(
         500 - Server failure
     """
 
-    return user_transport_controller.execute(user_guid=token_claims.sub, request=request)
+    return user_transport_controller.execute(user_guid=user_guid, request=request)
 
 
-@app.get("/v1/user/state", status_code=status.HTTP_200_OK)
-async def user_state_get_handler(token_claims: TokenClaims = Depends(is_enabled)) -> UserState:
+@app.get("/v1/user/{user_guid}/state", status_code=status.HTTP_200_OK)
+async def user_state_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserState:
     """
     Get User State
     [GET] /v1/user/{user_guid}/state
@@ -564,11 +564,11 @@ async def user_state_get_handler(token_claims: TokenClaims = Depends(is_enabled)
         500 - Server failure
     """
 
-    return user_state_get_controller.execute(user_guid=token_claims.sub)
+    return user_state_get_controller.execute(user_guid=user_guid)
 
 
-@app.get("/v1/user/stores", status_code=status.HTTP_200_OK)
-async def user_stores_get_handler(token_claims: TokenClaims = Depends(is_enabled)) -> UserStores:
+@app.get("/v1/user/{user_guid}/stores", status_code=status.HTTP_200_OK)
+async def user_stores_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserStores:
     """
     Get User Stores
     [GET] /v1/user/{user_guid}/stores
@@ -595,7 +595,7 @@ async def user_stores_get_handler(token_claims: TokenClaims = Depends(is_enabled
         500 - Server failure
     """
 
-    return user_stores_get_controller.execute(user_guid=token_claims.sub)
+    return user_stores_get_controller.execute(user_guid=user_guid)
 
 
 @app.get("/v1/world", status_code=status.HTTP_200_OK)

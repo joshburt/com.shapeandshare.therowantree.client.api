@@ -4,8 +4,8 @@ import logging
 
 from rowantree.contracts import UserActive
 
-from ..db.dao import DBDAO
-from ..db.incorrect_row_count_error import IncorrectRowCountError
+from ..services.db.dao import DBDAO
+from ..services.db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController
 
 

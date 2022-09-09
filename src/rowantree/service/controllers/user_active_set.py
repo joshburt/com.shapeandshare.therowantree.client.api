@@ -2,7 +2,7 @@
 
 from rowantree.contracts import UserActive
 
-from ..db.dao import DBDAO
+from ..services.db.dao import DBDAO
 from .abstract_controller import AbstractController
 
 

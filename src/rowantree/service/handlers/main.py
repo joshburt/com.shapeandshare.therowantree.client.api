@@ -42,8 +42,8 @@ from ..controllers.user_state_get import UserStateGetController
 from ..controllers.user_stores_get import UserStoresGetController
 from ..controllers.user_transport import UserTransportController
 from ..controllers.world_get import WorldStatusGetController
-from ..db.dao import DBDAO
-from ..db.utils import get_connect_pool
+from ..services.db.dao import DBDAO
+from ..services.db.utils import get_connect_pool
 
 # Setup logging
 Path(demand_env_var(name="LOGS_DIR")).mkdir(parents=True, exist_ok=True)

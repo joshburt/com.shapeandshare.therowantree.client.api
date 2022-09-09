@@ -15,7 +15,7 @@ from rowantree.contracts import (
     UserStores,
 )
 
-from ..db.incorrect_row_count_error import IncorrectRowCountError
+from ..services.db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController
 
 

@@ -8,7 +8,8 @@ Deployment
 ----------
 **Start the service (development only):**
 ```
-uvicorn src.rowantree.service.handlers.main:app --reload
+uvicorn src.rowantree.service.handlers.main:app --reload --port 8000 --env-file env/.env.offline
+uvicorn rowantree.service.handlers.main:app --reload --port 8000 --env-file env/.env.offline
 ```
 
 **Production Deployment**

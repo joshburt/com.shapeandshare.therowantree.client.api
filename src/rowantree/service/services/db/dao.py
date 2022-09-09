@@ -203,7 +203,7 @@ class DBDAO:
         try:
             rows: Optional[list[Tuple[str]]] = self._call_proc("createUserByGUID", args, True)
         except IntegrityError as error:
-            logging.debug(f"User already exists: {user_guid}, {str(error)}")
+            logging.debug("User already exists: %s, %s", user_guid, str(error))
             return User(guid=user_guid)
         if rows is None or len(rows) != 1:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")

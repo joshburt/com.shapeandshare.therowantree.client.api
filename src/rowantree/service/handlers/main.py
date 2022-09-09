@@ -94,6 +94,7 @@ app.add_middleware(
 )
 
 # Define our handlers
+# pylint: disable=unused-argument
 
 
 @app.get("/health/plain", status_code=status.HTTP_200_OK)

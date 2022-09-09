@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
-from ..db.dao import DBDAO
+from ..services.db.dao import DBDAO
 
 
 class AbstractController(ABC):

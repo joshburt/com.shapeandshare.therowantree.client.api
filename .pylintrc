@@ -87,6 +87,8 @@ confidence=
 #         deprecated-pragma,
 #         use-symbolic-message-instead
 disable=
+    arguments-differ,
+    too-few-public-methods
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -309,7 +311,7 @@ ignore-comments=yes
 ignore-docstrings=yes
 
 # Imports are removed from the similarity computation
-ignore-imports=no
+ignore-imports=yes
 
 # Signatures are removed from the similarity computation
 ignore-signatures=no

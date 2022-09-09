@@ -146,7 +146,7 @@ def merchant_transforms_perform_handler(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -184,7 +184,7 @@ def user_merchant_transforms_get_handler(
         404 - User not found
         500 - Server failure
     """
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -222,7 +222,7 @@ def user_active_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -262,7 +262,7 @@ def user_active_set_handler(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -294,7 +294,7 @@ def user_create_handler(user_guid: str, token_claims: TokenClaims = Depends(is_e
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -329,7 +329,7 @@ def user_delete_handler(user_guid: str, token_claims: TokenClaims = Depends(is_e
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -366,7 +366,7 @@ def user_features_get_handler(user_guid: str, token_claims: TokenClaims = Depend
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -405,7 +405,7 @@ def user_features_active_get_handler(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -442,7 +442,7 @@ def user_income_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -483,7 +483,7 @@ def user_income_set_handler(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -520,7 +520,7 @@ def user_population_get_handler(user_guid: str, token_claims: TokenClaims = Depe
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -564,7 +564,7 @@ def user_transport_handler(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -601,7 +601,7 @@ def user_state_get_handler(user_guid: str, token_claims: TokenClaims = Depends(i
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -638,7 +638,7 @@ def user_stores_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub:
+    if user_guid != token_claims.sub and not token_claims.admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",

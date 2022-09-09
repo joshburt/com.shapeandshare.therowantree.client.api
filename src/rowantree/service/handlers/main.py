@@ -6,6 +6,7 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, status
 from mysql.connector.pooling import MySQLConnectionPool
+from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 
 from rowantree.auth.sdk.common.depends import is_admin, is_enabled
@@ -144,6 +145,13 @@ def merchant_transforms_perform_handler(
         404 - User not found
         500 - Server failure
     """
+
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
+
     merchant_transforms_perform_controller.execute(user_guid=user_guid, request=request)
 
 
@@ -176,6 +184,11 @@ def user_merchant_transforms_get_handler(
         404 - User not found
         500 - Server failure
     """
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
 
     return user_merchant_transforms_get_controller.execute(user_guid=user_guid)
 
@@ -208,6 +221,12 @@ def user_active_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
         404 - User not found
         500 - Server failure
     """
+
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
 
     return user_active_get_controller.execute(user_guid=user_guid)
 
@@ -243,6 +262,12 @@ def user_active_set_handler(
         500 - Server failure
     """
 
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
+
     return user_active_set_controller.execute(user_guid=user_guid, request=request)
 
 
@@ -268,6 +293,12 @@ def user_create_handler(user_guid: str, token_claims: TokenClaims = Depends(is_e
         401 - Not authorized
         500 - Server failure
     """
+
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
 
     return user_create_controller.execute(request=user_guid)
 
@@ -297,6 +328,12 @@ def user_delete_handler(user_guid: str, token_claims: TokenClaims = Depends(is_e
         404 - User not found
         500 - Server failure
     """
+
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
 
     user_delete_controller.execute(user_guid=user_guid)
 
@@ -328,6 +365,12 @@ def user_features_get_handler(user_guid: str, token_claims: TokenClaims = Depend
         404 - User not found
         500 - Server failure
     """
+
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
 
     return user_features_get_controller.execute(user_guid=user_guid)
 
@@ -362,6 +405,12 @@ def user_features_active_get_handler(
         500 - Server failure
     """
 
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
+
     return user_features_active_get_controller.execute(user_guid=user_guid, details=details)
 
 
@@ -392,6 +441,12 @@ def user_income_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
         404 - User not found
         500 - Server failure
     """
+
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
 
     return user_income_get_controller.execute(user_guid=user_guid)
 
@@ -428,6 +483,12 @@ def user_income_set_handler(
         500 - Server failure
     """
 
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
+
     user_income_set_controller.execute(user_guid=user_guid, request=request)
 
 
@@ -458,6 +519,12 @@ def user_population_get_handler(user_guid: str, token_claims: TokenClaims = Depe
         404 - User not found
         500 - Server failure
     """
+
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
 
     return user_population_get_controller.execute(user_guid=user_guid)
 
@@ -497,6 +564,12 @@ def user_transport_handler(
         500 - Server failure
     """
 
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
+
     return user_transport_controller.execute(user_guid=user_guid, request=request)
 
 
@@ -528,6 +601,12 @@ def user_state_get_handler(user_guid: str, token_claims: TokenClaims = Depends(i
         500 - Server failure
     """
 
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
+
     return user_state_get_controller.execute(user_guid=user_guid)
 
 
@@ -558,6 +637,12 @@ def user_stores_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
         404 - User not found
         500 - Server failure
     """
+
+    if user_guid != token_claims.sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
 
     return user_stores_get_controller.execute(user_guid=user_guid)
 

@@ -5,7 +5,6 @@ import os
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, status
-from mysql.connector.pooling import MySQLConnectionPool
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 
@@ -44,7 +43,7 @@ from ..controllers.user_stores_get import UserStoresGetController
 from ..controllers.user_transport import UserTransportController
 from ..controllers.world_get import WorldStatusGetController
 from ..services.db.dao import DBDAO
-from ..services.db.utils import get_connect_pool
+from ..services.db.utils import WrappedConnectionPool
 
 # Setup logging
 Path(demand_env_var(name="LOGS_DIR")).mkdir(parents=True, exist_ok=True)
@@ -59,8 +58,8 @@ logging.basicConfig(
 logging.debug("Starting server")
 
 # Creating database connection pool, and DAO
-cnxpool: MySQLConnectionPool = get_connect_pool()
-dao: DBDAO = DBDAO(cnxpool=cnxpool)
+wrapped_cnxpool: WrappedConnectionPool = WrappedConnectionPool()
+dao: DBDAO = DBDAO(cnxpool=wrapped_cnxpool.cnxpool)
 
 # Create controllers
 merchant_transforms_perform_controller = MerchantTransformPerformController(dao=dao)
@@ -146,13 +145,23 @@ def merchant_transforms_perform_handler(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    merchant_transforms_perform_controller.execute(user_guid=user_guid, request=request)
+        merchant_transforms_perform_controller.execute(user_guid=user_guid, request=request)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 @app.get("/v1/user/{user_guid}/merchant", status_code=status.HTTP_200_OK)
@@ -184,13 +193,24 @@ def user_merchant_transforms_get_handler(
         404 - User not found
         500 - Server failure
     """
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
 
-    return user_merchant_transforms_get_controller.execute(user_guid=user_guid)
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
+
+        return user_merchant_transforms_get_controller.execute(user_guid=user_guid)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 # Get User's Active State
@@ -222,13 +242,23 @@ def user_active_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    return user_active_get_controller.execute(user_guid=user_guid)
+        return user_active_get_controller.execute(user_guid=user_guid)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 # Set User's Active State
@@ -262,13 +292,23 @@ def user_active_set_handler(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    return user_active_set_controller.execute(user_guid=user_guid, request=request)
+        return user_active_set_controller.execute(user_guid=user_guid, request=request)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 # Create User
@@ -294,13 +334,23 @@ def user_create_handler(user_guid: str, token_claims: TokenClaims = Depends(is_e
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    return user_create_controller.execute(request=user_guid)
+        return user_create_controller.execute(request=user_guid)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 # Delete User
@@ -329,13 +379,23 @@ def user_delete_handler(user_guid: str, token_claims: TokenClaims = Depends(is_e
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    user_delete_controller.execute(user_guid=user_guid)
+        user_delete_controller.execute(user_guid=user_guid)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 @app.get("/v1/user/{user_guid}/features", status_code=status.HTTP_200_OK)
@@ -366,13 +426,23 @@ def user_features_get_handler(user_guid: str, token_claims: TokenClaims = Depend
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    return user_features_get_controller.execute(user_guid=user_guid)
+        return user_features_get_controller.execute(user_guid=user_guid)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 @app.get("/v1/user/{user_guid}/features/active", status_code=status.HTTP_200_OK)
@@ -405,13 +475,23 @@ def user_features_active_get_handler(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    return user_features_active_get_controller.execute(user_guid=user_guid, details=details)
+        return user_features_active_get_controller.execute(user_guid=user_guid, details=details)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 @app.get("/v1/user/{user_guid}/income", status_code=status.HTTP_200_OK)
@@ -442,13 +522,23 @@ def user_income_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    return user_income_get_controller.execute(user_guid=user_guid)
+        return user_income_get_controller.execute(user_guid=user_guid)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 @app.post("/v1/user/{user_guid}/income", status_code=status.HTTP_200_OK)
@@ -483,13 +573,23 @@ def user_income_set_handler(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    user_income_set_controller.execute(user_guid=user_guid, request=request)
+        user_income_set_controller.execute(user_guid=user_guid, request=request)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 @app.get("/v1/user/{user_guid}/population", status_code=status.HTTP_200_OK)
@@ -520,13 +620,23 @@ def user_population_get_handler(user_guid: str, token_claims: TokenClaims = Depe
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    return user_population_get_controller.execute(user_guid=user_guid)
+        return user_population_get_controller.execute(user_guid=user_guid)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 @app.post("/v1/user/{user_guid}/transport", status_code=status.HTTP_200_OK)
@@ -564,13 +674,23 @@ def user_transport_handler(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    return user_transport_controller.execute(user_guid=user_guid, request=request)
+        return user_transport_controller.execute(user_guid=user_guid, request=request)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 @app.get("/v1/user/{user_guid}/state", status_code=status.HTTP_200_OK)
@@ -601,13 +721,23 @@ def user_state_get_handler(user_guid: str, token_claims: TokenClaims = Depends(i
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    return user_state_get_controller.execute(user_guid=user_guid)
+        return user_state_get_controller.execute(user_guid=user_guid)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 @app.get("/v1/user/{user_guid}/stores", status_code=status.HTTP_200_OK)
@@ -638,13 +768,23 @@ def user_stores_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
         500 - Server failure
     """
 
-    if user_guid != token_claims.sub and not token_claims.admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    return user_stores_get_controller.execute(user_guid=user_guid)
+        return user_stores_get_controller.execute(user_guid=user_guid)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 @app.get("/v1/world", status_code=status.HTTP_200_OK)
@@ -669,7 +809,17 @@ def world_get_handler(token_claims: TokenClaims = Depends(is_admin)) -> WorldSta
         500 - Server failure
     """
 
-    return world_status_get_controller.execute()
+    try:
+        return world_status_get_controller.execute()
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
 
 
 @app.post("/v1/world/queue", status_code=status.HTTP_200_OK)
@@ -696,4 +846,14 @@ def action_queue_process_handler(request: ActionQueue, token_claims: TokenClaims
         500 - Server failure
     """
 
-    action_queue_process_controller.execute(request=request)
+    try:
+        action_queue_process_controller.execute(request=request)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error

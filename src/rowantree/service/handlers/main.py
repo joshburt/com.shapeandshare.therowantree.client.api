@@ -249,7 +249,7 @@ def user_active_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
 @app.post("/v1/user/{user_guid}/active", status_code=status.HTTP_200_OK)
 def user_active_set_handler(
     user_guid: str, request: UserActiveGetStatus, token_claims: TokenClaims = Depends(is_enabled)
-) -> UserActiveGetStatus:
+) -> None:
     """
     Sets user's active state.
     [POST] /v1/user/{user_guid}/active
@@ -258,11 +258,6 @@ def user_active_set_handler(
     ----------
     user_guid: str
         The target user guid.
-
-    Returns
-    -------
-    user_active_state: UserActiveGetStatus
-        The user active state
 
     [STATUS CODE]
         200 - OK
@@ -278,7 +273,7 @@ def user_active_set_handler(
                 detail="Could not validate credentials",
             )
 
-        return user_active_set_controller.execute(user_guid=user_guid, request=request)
+        user_active_set_controller.execute(user_guid=user_guid, request=request)
     except HTTPException as error:
         logging.error(str(error))
         raise error from error

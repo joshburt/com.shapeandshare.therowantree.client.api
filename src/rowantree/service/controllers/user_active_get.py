@@ -2,7 +2,10 @@
 
 import logging
 
-from rowantree.contracts import UserActive
+from starlette import status
+from starlette.exceptions import HTTPException
+
+from rowantree.service.sdk import UserActiveGetStatus
 
 from ..services.db.dao import DBDAO
 from ..services.db.incorrect_row_count_error import IncorrectRowCountError
@@ -18,7 +21,7 @@ class UserActiveGetController(AbstractController):
     def __init__(self, dao: DBDAO):
         super().__init__(dao=dao)
 
-    def execute(self, user_guid: str) -> UserActive:
+    def execute(self, user_guid: str) -> UserActiveGetStatus:
         """
         Gets the user active state.
         If the requested user does not exist we do not expose this in the response. (information leakage).
@@ -31,15 +34,12 @@ class UserActiveGetController(AbstractController):
 
         Returns
         -------
-        user_active: UserActive
+        user_active: UserActiveGetStatus
             The user active state object.
         """
 
         try:
-            user_active: UserActive = self.dao.user_active_state_get(user_guid=user_guid)
-            logging.debug("user state requested for: {%s}, result: {%i}", user_guid, user_active.active)
+            return self.dao.user_active_state_get(user_guid=user_guid)
         except IncorrectRowCountError as error:
             logging.debug("caught: {%s}", str(error))
-            user_active: UserActive = UserActive(active=False)
-
-        return user_active
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unable to find user") from error

@@ -1,8 +1,13 @@
 """ User Transport Controller Definition """
+import logging
+
+from starlette import status
+from starlette.exceptions import HTTPException
 
 from rowantree.contracts import UserFeature
 from rowantree.service.sdk import UserTransportRequest
 
+from ..services.db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController
 
 
@@ -34,4 +39,8 @@ class UserTransportController(AbstractController):
             The user's new active feature.
         """
 
-        return self.dao.user_transport(user_guid=user_guid, location=request.location)
+        try:
+            return self.dao.user_transport(user_guid=user_guid, location=request.location)
+        except IncorrectRowCountError as error:
+            logging.debug("caught: {%s}", str(error))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unable to find user") from error

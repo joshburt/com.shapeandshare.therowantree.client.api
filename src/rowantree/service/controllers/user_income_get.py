@@ -1,6 +1,6 @@
 """ User Income Get Controller Definition """
-
-from rowantree.contracts import UserIncomes
+from rowantree.contracts import StoreType, UserIncome
+from rowantree.service.sdk import UserIncomeGetResponse
 
 from .abstract_controller import AbstractController
 
@@ -16,7 +16,7 @@ class UserIncomeGetController(AbstractController):
         Executes the command.
     """
 
-    def execute(self, user_guid: str) -> UserIncomes:
+    def execute(self, user_guid: str) -> UserIncomeGetResponse:
         """
         Gets (unique) list of user incomes.
 
@@ -27,8 +27,9 @@ class UserIncomeGetController(AbstractController):
 
         Returns
         -------
-        user_incomes: UserIncomes
+        user_incomes: UserIncomeGetResponse
             A (unique) list of user incomes.
         """
 
-        return self.dao.user_income_get(user_guid=user_guid)
+        income_sources: dict[StoreType, UserIncome] = self.dao.user_income_get(user_guid=user_guid)
+        return UserIncomeGetResponse(incomes=income_sources)

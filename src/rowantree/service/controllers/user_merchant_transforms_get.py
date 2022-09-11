@@ -1,6 +1,6 @@
 """ User Merchant Transforms Get Controller Definition """
-
-from rowantree.contracts import UserMerchants
+from rowantree.contracts import StoreType
+from rowantree.service.sdk import MerchantTransformsGetResponse
 
 from .abstract_controller import AbstractController
 
@@ -16,7 +16,7 @@ class UserMerchantTransformsGetController(AbstractController):
         Executes the command.
     """
 
-    def execute(self, user_guid: str) -> UserMerchants:
+    def execute(self, user_guid: str) -> MerchantTransformsGetResponse:
         """
         Gets a (unique) list of user merchant transforms.
 
@@ -27,8 +27,9 @@ class UserMerchantTransformsGetController(AbstractController):
 
         Returns
         -------
-        user_merchants: UserMerchants
+        user_merchants: MerchantTransformsGetResponse
             A (unique) list of user merchant transforms.
         """
 
-        return self.dao.user_merchant_transforms_get(user_guid=user_guid)
+        merchants: set[StoreType] = self.dao.user_merchant_transforms_get(user_guid=user_guid)
+        return MerchantTransformsGetResponse(merchants=merchants)

@@ -3,17 +3,7 @@
 from starlette import status
 from starlette.exceptions import HTTPException
 
-from rowantree.contracts import (
-    UserActive,
-    UserFeature,
-    UserFeatures,
-    UserIncomes,
-    UserMerchants,
-    UserNotifications,
-    UserPopulation,
-    UserState,
-    UserStores,
-)
+from rowantree.contracts import UserFeature, UserState
 
 from ..services.db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController
@@ -47,7 +37,7 @@ class UserStateGetController(AbstractController):
 
         # User Game State
         try:
-            active: UserActive = self.dao.user_active_state_get(user_guid=user_guid)
+            active: int = self.dao.user_active_state_get(user_guid=user_guid)
         except IncorrectRowCountError as error:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found") from error
 

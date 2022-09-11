@@ -13,20 +13,14 @@ from starlette.exceptions import HTTPException
 
 from rowantree.contracts import (
     ActionQueue,
-    Merchant,
+    FeatureType,
+    StoreType,
     User,
-    UserActive,
     UserEvent,
     UserFeature,
-    UserFeatures,
     UserIncome,
-    UserIncomes,
-    UserMerchants,
     UserNotification,
-    UserNotifications,
-    UserPopulation,
     UserStore,
-    UserStores,
 )
 from rowantree.service.sdk import UserIncomeSetRequest
 
@@ -107,28 +101,31 @@ class DBDAO:
         ]
         rows: list[Tuple[str, Optional[str]]] = self._call_proc("getUserActiveFeatureStateDetailsByGUID", args)
         if len(rows) != 1:
-            raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
+            # User did not exist (received an empty tuple)
+            message: str = f"Result count was not exactly one. Received: {rows}"
+            logging.debug(message)
+            raise IncorrectRowCountError(message)
 
         feature_detail: UserFeature = UserFeature(name=rows[0][0], description=rows[0][1])
         return feature_detail
 
-    def users_active_get(self) -> list[str]:
+    def users_active_get(self) -> set[str]:
         """
         Get Active Users.
 
         Returns
         -------
-        active_user_guids: list[str]
-            A (unique) list of user guids which are active.
+        active_user_guids: set[str]
+            A (unique) set of user guids which are active.
         """
 
-        active_user_guids: list[str] = []
+        active_user_guids: set[str] = set()
         rows: list[Tuple] = self._call_proc("getActiveUsers", [])
         for response_tuple in rows:
-            active_user_guids.append(response_tuple[0])
+            active_user_guids.add(response_tuple[0])
         return active_user_guids
 
-    def user_active_state_get(self, user_guid: str) -> UserActive:
+    def user_active_state_get(self, user_guid: str) -> bool:
         """
         Get user active state.
 
@@ -149,15 +146,14 @@ class DBDAO:
         rows: list[Tuple[int]] = self._call_proc("getUserActivityStateByGUID", args)
         if len(rows) != 1:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
-        if rows[0][0] == 0:
-            active: bool = False
-        else:
-            active: bool = True
-        return UserActive(active=active)
+        if rows[0][0] == 1:
+            return True
+        return False
 
     def user_active_state_set(self, user_guid: str, active: bool) -> None:
         """
         Set user's active state.
+        # TODO: the underlying calls need to provide more context on status of this call.
 
         Parameters
         ----------
@@ -205,15 +201,20 @@ class DBDAO:
         try:
             rows: Optional[list[Tuple[str]]] = self._call_proc("createUserByGUID", args, True)
         except IntegrityError as error:
-            logging.debug("User already exists: %s, %s", user_guid, str(error))
-            return User(guid=user_guid)
+            message: str = f"User already exists: {user_guid}, {str(error)}"
+            logging.debug(message)
+            raise IncorrectRowCountError(message)
         if rows is None or len(rows) != 1:
-            raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
+            # Shouldn't be possible
+            message: str = f"Result count was not exactly one. Received: {rows}"
+            logging.debug(message)
+            raise IncorrectRowCountError(message)
         return User(guid=rows[0][0])
 
     def user_delete(self, user_guid: str) -> None:
         """
         Delete user.
+        TODO: the underlying calls need to provide more context on status of this call.
 
         Parameters
         ----------
@@ -226,7 +227,7 @@ class DBDAO:
         ]
         self._call_proc("deleteUserByGUID", args)
 
-    def user_features_get(self, user_guid: str) -> UserFeatures:
+    def user_features_get(self, user_guid: str) -> dict[FeatureType, UserFeature]:
         """
         Get user features.
 
@@ -241,19 +242,31 @@ class DBDAO:
             User features object.
         """
 
-        features: list[UserFeature] = []
+        features: dict[FeatureType, UserFeature] = {}
 
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserFeaturesByGUID", args)
-        for row in rows:
-            features.append(UserFeature(name=row[0]))
-        return UserFeatures(features=features)
 
-    def user_income_get(self, user_guid: str) -> UserIncomes:
+        if rows is None or len(rows) == 0:
+            # User does not exist ot had no features.  However, it should not be
+            # possible to exist in the game world with without a feature state.
+            # Users are given a feature state on creation (the process is atomic).
+            # This should always be do to a non-existent user.
+            message: str = f"Result count was not exactly one. Received: {rows}"
+            logging.debug(message)
+            raise IncorrectRowCountError(message)
+
+        for row in rows:
+            name: str = row[0]
+            features[FeatureType(name)] = UserFeature(name=FeatureType(name))
+        return features
+
+    def user_income_get(self, user_guid: str) -> dict[StoreType, UserIncome]:
         """
         Get user income sources
+        # TODO: This can not tell if there are no stores, or if the user just doesn't exist.
 
         Parameters
         ----------
@@ -266,20 +279,20 @@ class DBDAO:
             User incomes object.
         """
 
-        income_sources: list[UserIncome] = []
+        income_sources: dict[StoreType, UserIncome] = {}
 
         args: list[str] = [
             user_guid,
         ]
         rows: list[Tuple[int, str, Optional[str]]] = self._call_proc("getUserIncomeByGUID", args)
         for row in rows:
-            income: UserIncome = UserIncome(amount=row[0], name=row[1], description=row[2])
-            income_sources.append(income)
-        return UserIncomes(incomes=income_sources)
+            income_sources[StoreType(row[1])] = UserIncome(amount=row[0], name=StoreType(row[1]), description=row[2])
+        return income_sources
 
     def user_income_set(self, user_guid: str, transaction: UserIncomeSetRequest) -> None:
         """
         Set user income source.
+        TODO: This needs to return more detail on success / failure.
 
         Parameters
         ----------
@@ -292,7 +305,7 @@ class DBDAO:
         args = [user_guid, transaction.income_source_name, transaction.amount]
         self._call_proc("deltaUserIncomeByNameAndGUID", args)
 
-    def user_merchant_transforms_get(self, user_guid: str) -> UserMerchants:
+    def user_merchant_transforms_get(self, user_guid: str) -> set[StoreType]:
         """
         Get User merchant transforms [currently available].
 
@@ -303,19 +316,19 @@ class DBDAO:
 
         Returns
         -------
-        user_merchants: UserMerchants
+        user_merchants: set[StoreType]
             User merchants object.
         """
 
-        merchants: list[Merchant] = []
+        merchants: set[StoreType] = set()
 
         args: list = [
             user_guid,
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserMerchantTransformsByGUID", args)
         for row in rows:
-            merchants.append(Merchant(name=row[0]))
-        return UserMerchants(merchants=merchants)
+            merchants.add(StoreType(row[0]))
+        return merchants
 
     def user_notifications_get(self, user_guid: str) -> UserNotifications:
         """
@@ -346,7 +359,7 @@ class DBDAO:
             notifications.append(notification)
         return UserNotifications(notifications=notifications)
 
-    def user_population_by_guid_get(self, user_guid: str) -> UserPopulation:
+    def user_population_by_guid_get(self, user_guid: str) -> int:
         """
         Get user population (by GUID)
 
@@ -357,8 +370,8 @@ class DBDAO:
 
         Returns
         -------
-        user_population: UserPopulation
-            User population object.
+        user_population: int
+            User population size.
         """
 
         rows: list[Tuple[int]] = self._call_proc(
@@ -367,9 +380,14 @@ class DBDAO:
                 user_guid,
             ],
         )
-        return UserPopulation(population=rows[0][0])
+        if rows is None or len(rows) != 1:
+            message: str = f"Result count was not exactly one. Received: {rows}"
+            logging.debug(message)
+            raise IncorrectRowCountError(message)
 
-    def user_stores_get(self, user_guid: str) -> UserStores:
+        return rows[0][0]
+
+    def user_stores_get(self, user_guid: str) -> dict[StoreType, UserStore]:
         """
         Get user stores.
 
@@ -380,19 +398,19 @@ class DBDAO:
 
         Returns
         -------
-        user_stores: UserStores
+        user_stores: dict[StoreType, UserStore]
             User Stores Object
         """
 
-        stores: list[UserStore] = []
+        stores: dict[StoreType, UserStore] = {}
 
         args: list[str, int] = [
             user_guid,
         ]
         rows: list[Tuple[str, Optional[str], int]] = self._call_proc("getUserStoresByGUID", args)
         for row in rows:
-            stores.append(UserStore(name=row[0], description=row[1], amount=row[2]))
-        return UserStores(stores=stores)
+            stores[StoreType(row[0])] = UserStore(name=StoreType(row[0]), description=row[1], amount=row[2])
+        return stores
 
     def user_transport(self, user_guid: str, location: str) -> UserFeature:
         """
@@ -416,7 +434,7 @@ class DBDAO:
         if len(rows) != 1:
             raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
         location_tuple: Tuple[str, Optional[str]] = rows[0]
-        location: UserFeature = UserFeature(name=location_tuple[0], description=location_tuple[1])
+        location: UserFeature = UserFeature(name=FeatureType(location_tuple[0]), description=location_tuple[1])
         return location
 
     # Utility functions

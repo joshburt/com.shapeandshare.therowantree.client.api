@@ -13,17 +13,19 @@ from starlette.exceptions import HTTPException
 
 from rowantree.contracts import (
     ActionQueue,
+    FeatureDetails,
     FeatureType,
     StoreType,
     User,
     UserEvent,
-    UserFeature,
+    UserFeatureState,
     UserIncome,
     UserNotification,
     UserStore,
 )
 from rowantree.service.sdk import UserIncomeSetRequest
 
+from ...contracts.duplicate_key_error import DuplicateKeyError
 from .incorrect_row_count_error import IncorrectRowCountError
 
 
@@ -57,7 +59,7 @@ class DBDAO:
         args: list = [user_guid, store_name]
         self._call_proc("peformMerchantTransformByGUID", args)
 
-    def user_active_feature_get(self, user_guid: str) -> UserFeature:
+    def user_active_feature_get(self, user_guid: str) -> FeatureType:
         """
         Gets user's active feature/location.
 
@@ -68,7 +70,7 @@ class DBDAO:
 
         Returns
         -------
-        user_feature: UserFeature
+        user_feature: FeatureType
             The active user feature.
         """
 
@@ -81,9 +83,9 @@ class DBDAO:
             message: str = f"Result count was not exactly one. Received: {rows}"
             logging.debug(message)
             raise IncorrectRowCountError(message)
-        return UserFeature(name=FeatureType(rows[0][0]))
+        return FeatureType(rows[0][0])
 
-    def user_active_feature_state_details_get(self, user_guid: str) -> UserFeature:
+    def user_active_feature_state_details_get(self, user_guid: str) -> UserFeatureState:
         """
         Get User Active Feature/Location Including Details.
 
@@ -94,7 +96,7 @@ class DBDAO:
 
         Returns
         -------
-        user_feature: UserFeature
+        user_feature: UserFeatureState
             The active user feature/location with details.
         """
 
@@ -108,7 +110,7 @@ class DBDAO:
             logging.debug(message)
             raise IncorrectRowCountError(message)
 
-        return UserFeature(name=rows[0][0], description=rows[0][1])
+        return UserFeatureState(details=FeatureDetails(rows[0][0]), description=rows[0][1])
 
     def users_active_get(self) -> set[str]:
         """
@@ -176,6 +178,7 @@ class DBDAO:
     def user_create_by_guid(self, user_guid: str) -> User:
         """
         Create a user.
+        TODO this returns nothing, needs more detail from the db.
 
         Returns
         -------
@@ -185,17 +188,12 @@ class DBDAO:
 
         args = [user_guid]
         try:
-            rows: Optional[list[Tuple[str]]] = self._call_proc("createUserByGUID", args, True)
-        except IntegrityError as error:
+            self._call_proc("createUserByGUID", args, True)
+        except (IntegrityError, DuplicateKeyError) as error:
             message: str = f"User already exists: {user_guid}, {str(error)}"
             logging.debug(message)
             raise IncorrectRowCountError(message) from error
-        if rows is None or len(rows) != 1:
-            # Shouldn't be possible
-            message: str = f"Result count was not exactly one. Received: {rows}"
-            logging.debug(message)
-            raise IncorrectRowCountError(message)
-        return User(guid=rows[0][0])
+        return User(guid=user_guid)
 
     def user_delete(self, user_guid: str) -> None:
         """
@@ -213,7 +211,7 @@ class DBDAO:
         ]
         self._call_proc("deleteUserByGUID", args)
 
-    def user_features_get(self, user_guid: str) -> dict[FeatureType, UserFeature]:
+    def user_features_get(self, user_guid: str) -> set[FeatureType]:
         """
         Get user features.
 
@@ -228,7 +226,7 @@ class DBDAO:
             User features object.
         """
 
-        features: dict[FeatureType, UserFeature] = {}
+        features: set[FeatureType] = set()
 
         args: list = [
             user_guid,
@@ -246,7 +244,8 @@ class DBDAO:
 
         for row in rows:
             name: str = row[0]
-            features[FeatureType(name)] = UserFeature(name=FeatureType(name))
+            features.add(FeatureType(name))
+
         return features
 
     def user_income_get(self, user_guid: str) -> dict[StoreType, UserIncome]:
@@ -398,7 +397,7 @@ class DBDAO:
             stores[StoreType(row[0])] = UserStore(name=StoreType(row[0]), description=row[1], amount=row[2])
         return stores
 
-    def user_transport(self, user_guid: str, location: str) -> UserFeature:
+    def user_transport(self, user_guid: str, location: str) -> FeatureType:
         """
         Perform User Transport.
 
@@ -418,10 +417,11 @@ class DBDAO:
         args: list = [user_guid, location]
         rows: list[Tuple[str, Optional[str]]] = self._call_proc("transportUserByGUID", args)
         if len(rows) != 1:
-            raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
-        location_tuple: Tuple[str, Optional[str]] = rows[0]
-        location: UserFeature = UserFeature(name=FeatureType(location_tuple[0]), description=location_tuple[1])
-        return location
+            # User did not exist (received an empty tuple)
+            message: str = f"Result count was not exactly one. Received: {rows}"
+            logging.debug(message)
+            raise IncorrectRowCountError(message)
+        return FeatureType(rows[0][0])
 
     # Utility functions
 
@@ -469,20 +469,25 @@ class DBDAO:
                 rows = result.fetchall()
             cursor.close()
         except socket.error as error:
+            logging.error("socket.error")
             logging.error(error)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
             ) from error
         except mysql.connector.Error as error:
-            logging.error(str(error))
+            logging.error("mysql.connector.Error")
             if error.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 logging.error("Something is wrong with your user name or password")
             elif error.errno == errorcode.ER_BAD_DB_ERROR:
                 logging.error("Database does not exist")
+            elif error.errno == errorcode.ER_DUP_ENTRY:
+                logging.error("Duplicate key")
+                raise DuplicateKeyError(str(error)) from error
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
             ) from error
         except Exception as error:
+            logging.error("error")
             # All other uncaught exception types
             logging.error(str(error))
             raise HTTPException(

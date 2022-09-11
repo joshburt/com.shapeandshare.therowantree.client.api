@@ -11,8 +11,9 @@ from starlette.middleware.cors import CORSMiddleware
 from rowantree.auth.sdk.common.depends import is_admin, is_enabled
 from rowantree.auth.sdk.contracts.dto.token_claims import TokenClaims
 from rowantree.common.sdk import demand_env_var
-from rowantree.contracts import ActionQueue, User, UserFeature, UserState
+from rowantree.contracts import ActionQueue, User, UserFeatureState, UserState
 from rowantree.service.sdk import (
+    ActiveFeatureResponse,
     FeaturesGetResponse,
     MerchantTransformRequest,
     MerchantTransformsGetResponse,
@@ -31,7 +32,8 @@ from ..controllers.user_active_get import UserActiveGetController
 from ..controllers.user_active_set import UserActiveSetController
 from ..controllers.user_create import UserCreateController
 from ..controllers.user_delete import UserDeleteController
-from ..controllers.user_features_active_get import UserFeaturesActiveGetController
+from ..controllers.user_feature_active_get import UserFeatureActiveGetController
+from ..controllers.user_feature_active_state_get import UserFeatureActiveStateGetController
 from ..controllers.user_features_get import UserFeaturesGetController
 from ..controllers.user_income_get import UserIncomeGetController
 from ..controllers.user_income_set import UserIncomeSetController
@@ -67,7 +69,8 @@ user_active_set_controller = UserActiveSetController(dao=dao)
 user_create_controller = UserCreateController(dao=dao)
 user_delete_controller = UserDeleteController(dao=dao)
 user_features_get_controller = UserFeaturesGetController(dao=dao)
-user_features_active_get_controller = UserFeaturesActiveGetController(dao=dao)
+user_features_active_get_controller = UserFeatureActiveGetController(dao=dao)
+user_feature_active_state_get_controller = UserFeatureActiveStateGetController(dao=dao)
 user_income_get_controller = UserIncomeGetController(dao=dao)
 user_income_set_controller = UserIncomeSetController(dao=dao)
 user_merchant_transforms_get_controller = UserMerchantTransformsGetController(dao=dao)
@@ -405,9 +408,9 @@ def user_features_get_handler(user_guid: str, token_claims: TokenClaims = Depend
 
 
 @app.get("/v1/user/{user_guid}/features/active", status_code=status.HTTP_200_OK)
-def user_features_active_get_handler(
-    user_guid: str, token_claims: TokenClaims = Depends(is_enabled), details: bool = False
-) -> UserFeature:
+def user_feature_active_get_handler(
+    user_guid: str, token_claims: TokenClaims = Depends(is_enabled)
+) -> ActiveFeatureResponse:
     """
     Get Active User Features.
     [GET] /v1/user/{user_guid}/features/active
@@ -419,7 +422,7 @@ def user_features_active_get_handler(
 
     Returns
     -------
-    user_feature: UserFeature
+    user_feature: ActiveFeatureResponse
     The active user feature.
 
     [STATUS CODE]
@@ -436,7 +439,51 @@ def user_features_active_get_handler(
                 detail="Could not validate credentials",
             )
 
-        return user_features_active_get_controller.execute(user_guid=user_guid, details=details)
+        return user_features_active_get_controller.execute(user_guid=user_guid)
+    except HTTPException as error:
+        logging.error(str(error))
+        raise error from error
+    except Exception as error:
+        # Caught all other uncaught errors.
+        logging.error(str(error))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
+        ) from error
+
+
+@app.get("/v1/user/{user_guid}/features/state", status_code=status.HTTP_200_OK)
+def user_feature_active_state_get_handler(
+    user_guid: str, token_claims: TokenClaims = Depends(is_enabled)
+) -> UserFeatureState:
+    """
+    Get Active User Features.
+    [GET] /v1/user/{user_guid}/features/state
+
+    Path
+    ----------
+    user_guid: str
+        The target user guid.
+
+    Returns
+    -------
+    user_feature: UserFeatureState
+    The active user feature state.
+
+    [STATUS CODE]
+        200 - OK
+        401 - Not authorized
+        404 - User not found
+        500 - Server failure
+    """
+
+    try:
+        if user_guid != token_claims.sub and not token_claims.admin:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
+
+        return user_feature_active_state_get_controller.execute(user_guid=user_guid)
     except HTTPException as error:
         logging.error(str(error))
         raise error from error
@@ -583,7 +630,7 @@ def user_population_get_handler(
 @app.post("/v1/user/{user_guid}/transport", status_code=status.HTTP_200_OK)
 def user_transport_handler(
     user_guid: str, request: UserTransportRequest, token_claims: TokenClaims = Depends(is_enabled)
-) -> UserFeature:
+) -> ActiveFeatureResponse:
     """
     Transport User
     [POST] /v1/user/{user_guid}/transport
@@ -600,7 +647,7 @@ def user_transport_handler(
 
     Returns
     -------
-    user_feature: UserFeature
+    user_feature: ActiveFeatureResponse
         Active User Feature.
 
     [STATUS CODE]

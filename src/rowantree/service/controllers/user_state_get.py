@@ -1,9 +1,18 @@
 """ User State Get Controller Definition """
+import logging
 
 from starlette import status
 from starlette.exceptions import HTTPException
 
-from rowantree.contracts import FeatureType, StoreType, UserFeature, UserIncome, UserNotification, UserState, UserStore
+from rowantree.contracts import (
+    FeatureType,
+    StoreType,
+    UserFeatureState,
+    UserIncome,
+    UserNotification,
+    UserState,
+    UserStore,
+)
 
 from ..services.db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController
@@ -46,13 +55,20 @@ class UserStateGetController(AbstractController):
             incomes: dict[StoreType, UserIncome] = self.dao.user_income_get(user_guid=user_guid)
 
             # Features
-            features: dict[FeatureType, UserFeature] = self.dao.user_features_get(user_guid=user_guid)
+            features: set[FeatureType] = self.dao.user_features_get(user_guid=user_guid)
 
             # Population
             population: int = self.dao.user_population_by_guid_get(user_guid=user_guid)
 
+            logging.debug("checkpoint 1")
             # Active Feature w/ Details
-            active_feature: UserFeature = self.dao.user_active_feature_state_details_get(user_guid=user_guid)
+            active_feature: FeatureType = self.dao.user_active_feature_get(user_guid=user_guid)
+            logging.debug("checkpoint 2")
+
+            logging.debug("checkpoint 3")
+            # Active Feature w/ Details
+            active_feature_state: UserFeatureState = self.dao.user_active_feature_state_details_get(user_guid=user_guid)
+            logging.debug("checkpoint 4")
 
             # Merchants
             merchants: set[StoreType] = self.dao.user_merchant_transforms_get(user_guid=user_guid)
@@ -69,6 +85,7 @@ class UserStateGetController(AbstractController):
             incomes=incomes,
             features=features,
             active_feature=active_feature,
+            active_feature_state=active_feature_state,
             population=population,
             merchants=merchants,
             notifications=notifications,

@@ -77,9 +77,11 @@ class DBDAO:
         ]
         rows: list[Tuple[str]] = self._call_proc("getUserActiveFeatureByGUID", args)
         if len(rows) != 1:
-            raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
-        feature_detail: UserFeature = UserFeature(name=rows[0][0])
-        return feature_detail
+            # User did not exist (received an empty tuple)
+            message: str = f"Result count was not exactly one. Received: {rows}"
+            logging.debug(message)
+            raise IncorrectRowCountError(message)
+        return UserFeature(name=FeatureType(rows[0][0]))
 
     def user_active_feature_state_details_get(self, user_guid: str) -> UserFeature:
         """
@@ -106,8 +108,7 @@ class DBDAO:
             logging.debug(message)
             raise IncorrectRowCountError(message)
 
-        feature_detail: UserFeature = UserFeature(name=rows[0][0], description=rows[0][1])
-        return feature_detail
+        return UserFeature(name=rows[0][0], description=rows[0][1])
 
     def users_active_get(self) -> set[str]:
         """
@@ -172,21 +173,6 @@ class DBDAO:
             proc = "setUserInactiveByGUID"
         self._call_proc(name=proc, args=args)
 
-    def user_create(self) -> User:
-        """
-        Create a user.
-
-        Returns
-        -------
-        user: User
-            The created user.
-        """
-
-        rows: list[Tuple[str]] = self._call_proc("createUser", [])
-        if len(rows) != 1:
-            raise IncorrectRowCountError(f"Result count was not exactly one. Received: {rows}")
-        return User(guid=rows[0][0])
-
     def user_create_by_guid(self, user_guid: str) -> User:
         """
         Create a user.
@@ -203,7 +189,7 @@ class DBDAO:
         except IntegrityError as error:
             message: str = f"User already exists: {user_guid}, {str(error)}"
             logging.debug(message)
-            raise IncorrectRowCountError(message)
+            raise IncorrectRowCountError(message) from error
         if rows is None or len(rows) != 1:
             # Shouldn't be possible
             message: str = f"Result count was not exactly one. Received: {rows}"
@@ -330,7 +316,7 @@ class DBDAO:
             merchants.add(StoreType(row[0]))
         return merchants
 
-    def user_notifications_get(self, user_guid: str) -> UserNotifications:
+    def user_notifications_get(self, user_guid: str) -> list[UserNotification]:
         """
         Get User notifications.
         Returns the most recent (new) user notifications.
@@ -357,7 +343,7 @@ class DBDAO:
                 index=row[0], timestamp=row[1], event=UserEvent.parse_raw(row[2])
             )
             notifications.append(notification)
-        return UserNotifications(notifications=notifications)
+        return notifications
 
     def user_population_by_guid_get(self, user_guid: str) -> int:
         """

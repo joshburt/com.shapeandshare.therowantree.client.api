@@ -1,30 +1,29 @@
-""" User Features Get Controller Definition """
+""" User Feature Active State Get Controller Definition """
 import logging
 
 from starlette import status
 from starlette.exceptions import HTTPException
 
-from rowantree.contracts import FeatureType
-from rowantree.service.sdk import FeaturesGetResponse
+from rowantree.contracts import UserFeatureState
 
 from ..services.db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController
 
 
-class UserFeaturesGetController(AbstractController):
+class UserFeatureActiveStateGetController(AbstractController):
     """
-    User Features Get Controller
-    Gets the unique list of user features.
+    User Feature Active State Get Controller
+    Gets the active user feature.
 
     Methods
     -------
-    execute(self, user_guid: str) -> UserFeatures
+    execute(self, user_guid: str, details: bool) -> UserFeature
         Executes the command.
     """
 
-    def execute(self, user_guid: str) -> FeaturesGetResponse:
+    def execute(self, user_guid: str) -> UserFeatureState:
         """
-        Gets the unique list of user features.
+        Gets the active user feature.
 
         Parameters
         ----------
@@ -33,13 +32,12 @@ class UserFeaturesGetController(AbstractController):
 
         Returns
         -------
-        user_features: UserFeatures
-            A unique list of user features.
+        user_feature_state: UserFeatureState
+            The UserFeatureState.
         """
 
         try:
-            features: set[FeatureType] = self.dao.user_features_get(user_guid=user_guid)
-            return FeaturesGetResponse(features=features)
+            return self.dao.user_active_feature_state_details_get(user_guid=user_guid)
         except IncorrectRowCountError as error:
             # User did not exist (received an empty tuple)
             logging.debug("caught: {%s}", str(error))

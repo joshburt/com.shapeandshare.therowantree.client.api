@@ -1,6 +1,6 @@
 """ User Stores Get Controller Definition """
-
-from rowantree.contracts import UserStores
+from rowantree.contracts import StoreType, UserStore
+from rowantree.service.sdk import StoresGetResponse
 
 from .abstract_controller import AbstractController
 
@@ -16,7 +16,7 @@ class UserStoresGetController(AbstractController):
         Executes the command.
     """
 
-    def execute(self, user_guid: str) -> UserStores:
+    def execute(self, user_guid: str) -> StoresGetResponse:
         """
         Gets the (unique) list of user stores.
 
@@ -31,4 +31,5 @@ class UserStoresGetController(AbstractController):
             A (unique) list of user stores.
         """
 
-        return self.dao.user_stores_get(user_guid=user_guid)
+        stores: dict[StoreType, UserStore] = self.dao.user_stores_get(user_guid=user_guid)
+        return StoresGetResponse(stores=stores)

@@ -1,8 +1,13 @@
 """ User Transport Controller Definition """
+import logging
 
-from rowantree.contracts import UserFeature
-from rowantree.service.sdk import UserTransportRequest
+from starlette import status
+from starlette.exceptions import HTTPException
 
+from rowantree.contracts import FeatureType
+from rowantree.service.sdk import ActiveFeatureResponse, UserTransportRequest
+
+from ..services.db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController
 
 
@@ -13,11 +18,11 @@ class UserTransportController(AbstractController):
 
     Methods
     -------
-    execute(self, user_guid: str, request: UserTransportRequest) -> UserFeature
+    execute(self, user_guid: str, request: UserTransportRequest) -> ActiveFeatureResponse
         Executes the command.
     """
 
-    def execute(self, user_guid: str, request: UserTransportRequest) -> UserFeature:
+    def execute(self, user_guid: str, request: UserTransportRequest) -> ActiveFeatureResponse:
         """
         Performs a user transport. (feature to feature change)
 
@@ -30,8 +35,13 @@ class UserTransportController(AbstractController):
 
         Returns
         -------
-        user_feature: UserFeature
+        user_feature: ActiveFeatureResponse
             The user's new active feature.
         """
 
-        return self.dao.user_transport(user_guid=user_guid, location=request.location)
+        try:
+            feature: FeatureType = self.dao.user_transport(user_guid=user_guid, location=request.location)
+            return ActiveFeatureResponse(active_feature=feature)
+        except IncorrectRowCountError as error:
+            logging.debug("caught: {%s}", str(error))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unable to find user") from error

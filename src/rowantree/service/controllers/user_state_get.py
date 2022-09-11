@@ -1,18 +1,17 @@
 """ User State Get Controller Definition """
+import logging
 
 from starlette import status
 from starlette.exceptions import HTTPException
 
 from rowantree.contracts import (
-    UserActive,
-    UserFeature,
-    UserFeatures,
-    UserIncomes,
-    UserMerchants,
-    UserNotifications,
-    UserPopulation,
+    FeatureType,
+    StoreType,
+    UserFeatureState,
+    UserIncome,
+    UserNotification,
     UserState,
-    UserStores,
+    UserStore,
 )
 
 from ..services.db.incorrect_row_count_error import IncorrectRowCountError
@@ -45,41 +44,50 @@ class UserStateGetController(AbstractController):
             The user state object.
         """
 
-        # User Game State
         try:
-            active: UserActive = self.dao.user_active_state_get(user_guid=user_guid)
+            # User Game State
+            active: int = self.dao.user_active_state_get(user_guid=user_guid)
+
+            # User Stores (Inventory)
+            stores: dict[StoreType, UserStore] = self.dao.user_stores_get(user_guid=user_guid)
+
+            # User Income
+            incomes: dict[StoreType, UserIncome] = self.dao.user_income_get(user_guid=user_guid)
+
+            # Features
+            features: set[FeatureType] = self.dao.user_features_get(user_guid=user_guid)
+
+            # Population
+            population: int = self.dao.user_population_by_guid_get(user_guid=user_guid)
+
+            logging.debug("checkpoint 1")
+            # Active Feature w/ Details
+            active_feature: FeatureType = self.dao.user_active_feature_get(user_guid=user_guid)
+            logging.debug("checkpoint 2")
+
+            logging.debug("checkpoint 3")
+            # Active Feature w/ Details
+            active_feature_state: UserFeatureState = self.dao.user_active_feature_state_details_get(user_guid=user_guid)
+            logging.debug("checkpoint 4")
+
+            # Merchants
+            merchants: set[StoreType] = self.dao.user_merchant_transforms_get(user_guid=user_guid)
+
+            # Notifications
+            notifications: list[UserNotification] = self.dao.user_notifications_get(user_guid=user_guid)
+
         except IncorrectRowCountError as error:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found") from error
 
-        # User Stores (Inventory)
-        stores: UserStores = self.dao.user_stores_get(user_guid=user_guid)
-
-        # User Income
-        incomes: UserIncomes = self.dao.user_income_get(user_guid=user_guid)
-
-        # Features
-        features: UserFeatures = self.dao.user_features_get(user_guid=user_guid)
-
-        # Population
-        population: UserPopulation = self.dao.user_population_by_guid_get(user_guid=user_guid)
-
-        # Active Feature w/ Details
-        active_feature: UserFeature = self.dao.user_active_feature_state_details_get(user_guid=user_guid)
-
-        # Merchants
-        merchants: UserMerchants = self.dao.user_merchant_transforms_get(user_guid=user_guid)
-
-        # Notifications
-        notifications: UserNotifications = self.dao.user_notifications_get(user_guid=user_guid)
-
         user_state: UserState = UserState(
-            active=active.active,
-            stores=stores.stores,
-            incomes=incomes.incomes,
-            features=features.features,
+            active=active,
+            stores=stores,
+            incomes=incomes,
+            features=features,
             active_feature=active_feature,
-            population=population.population,
-            merchants=merchants.merchants,
-            notifications=notifications.notifications,
+            active_feature_state=active_feature_state,
+            population=population,
+            merchants=merchants,
+            notifications=notifications,
         )
         return user_state

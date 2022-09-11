@@ -19,6 +19,7 @@ class UserDeleteController(AbstractController):
     def execute(self, user_guid: str) -> Any:
         """
         Deletes a user.
+        TODO: the underlying calls need to provide more context on status of this call.
 
         Parameters
         ----------
@@ -26,4 +27,4 @@ class UserDeleteController(AbstractController):
             The target user guid.
         """
 
-        return self.dao.user_delete(user_guid=user_guid)
+        self.dao.user_delete(user_guid=user_guid)

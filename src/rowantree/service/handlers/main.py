@@ -11,20 +11,19 @@ from starlette.middleware.cors import CORSMiddleware
 from rowantree.auth.sdk.common.depends import is_admin, is_enabled
 from rowantree.auth.sdk.contracts.dto.token_claims import TokenClaims
 from rowantree.common.sdk import demand_env_var
-from rowantree.contracts import (
-    ActionQueue,
-    User,
-    UserActive,
-    UserFeature,
-    UserFeatures,
-    UserIncomes,
-    UserMerchants,
-    UserPopulation,
-    UserState,
-    UserStores,
-    WorldStatus,
+from rowantree.contracts import ActionQueue, User, UserFeature, UserState
+from rowantree.service.sdk import (
+    FeaturesGetResponse,
+    MerchantTransformRequest,
+    MerchantTransformsGetResponse,
+    PopulationGetResponse,
+    StoresGetResponse,
+    UserActiveGetStatus,
+    UserIncomeGetResponse,
+    UserIncomeSetRequest,
+    UserTransportRequest,
+    WorldStatusGetResponse,
 )
-from rowantree.service.sdk import MerchantTransformRequest, UserIncomeSetRequest, UserTransportRequest
 
 from ..controllers.action_queue_process import ActionQueueProcessController
 from ..controllers.merchant_transforms_perform import MerchantTransformPerformController
@@ -131,11 +130,6 @@ def merchant_transforms_perform_handler(
     request: MerchantTransformRequest
         The requested merchant transform.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
     [STATUS CODE]
@@ -167,7 +161,7 @@ def merchant_transforms_perform_handler(
 @app.get("/v1/user/{user_guid}/merchant", status_code=status.HTTP_200_OK)
 def user_merchant_transforms_get_handler(
     user_guid: str, token_claims: TokenClaims = Depends(is_enabled)
-) -> UserMerchants:
+) -> MerchantTransformsGetResponse:
     """
     Gets user merchants.
     [GET] /v1/user/{user_guid}/merchant
@@ -177,14 +171,9 @@ def user_merchant_transforms_get_handler(
     user_guid: str
         The target user guid.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
-    user_merchants: UserMerchants
+    user_merchants: MerchantTransformsGetResponse
         The user merchants.
 
     [STATUS CODE]
@@ -215,7 +204,7 @@ def user_merchant_transforms_get_handler(
 
 # Get User's Active State
 @app.get("/v1/user/{user_guid}/active", status_code=status.HTTP_200_OK)
-def user_active_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserActive:
+def user_active_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserActiveGetStatus:
     """
     Gets user's active state.
     [GET] /v1/user/{user_guid}/active
@@ -225,14 +214,9 @@ def user_active_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
     user_guid: str
         The target user guid.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
-    user_active_state: UserActive
+    user_active_state: UserActiveGetStatus
         The user active state
 
     [STATUS CODE]
@@ -264,8 +248,8 @@ def user_active_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
 # Set User's Active State
 @app.post("/v1/user/{user_guid}/active", status_code=status.HTTP_200_OK)
 def user_active_set_handler(
-    user_guid: str, request: UserActive, token_claims: TokenClaims = Depends(is_enabled)
-) -> UserActive:
+    user_guid: str, request: UserActiveGetStatus, token_claims: TokenClaims = Depends(is_enabled)
+) -> UserActiveGetStatus:
     """
     Sets user's active state.
     [POST] /v1/user/{user_guid}/active
@@ -275,14 +259,9 @@ def user_active_set_handler(
     user_guid: str
         The target user guid.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
-    user_active_state: UserActive
+    user_active_state: UserActiveGetStatus
         The user active state
 
     [STATUS CODE]
@@ -317,11 +296,6 @@ def user_create_handler(user_guid: str, token_claims: TokenClaims = Depends(is_e
     """
     Creates a user.
     [POST] /v1/user
-
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
 
     Returns
     -------
@@ -365,11 +339,6 @@ def user_delete_handler(user_guid: str, token_claims: TokenClaims = Depends(is_e
     user_guid: str
         The target user guid.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
     [STATUS CODE]
@@ -399,7 +368,7 @@ def user_delete_handler(user_guid: str, token_claims: TokenClaims = Depends(is_e
 
 
 @app.get("/v1/user/{user_guid}/features", status_code=status.HTTP_200_OK)
-def user_features_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserFeatures:
+def user_features_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> FeaturesGetResponse:
     """
     Get User Features.
     [GET] /v1/user/{user_guid}/features
@@ -409,14 +378,9 @@ def user_features_get_handler(user_guid: str, token_claims: TokenClaims = Depend
     user_guid: str
         The target user guid.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
-    user_features: UserFeatures
+    user_features: FeaturesGetResponse
     The user features.
 
     [STATUS CODE]
@@ -458,15 +422,10 @@ def user_features_active_get_handler(
     user_guid: str
         The target user guid.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
-    user_features: UserFeatures
-    The active user features.
+    user_feature: UserFeature
+    The active user feature.
 
     [STATUS CODE]
         200 - OK
@@ -495,7 +454,7 @@ def user_features_active_get_handler(
 
 
 @app.get("/v1/user/{user_guid}/income", status_code=status.HTTP_200_OK)
-def user_income_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserIncomes:
+def user_income_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserIncomeGetResponse:
     """
     Get User Income Sources.
     [GET] /v1/user/{user_guid}/income
@@ -505,14 +464,9 @@ def user_income_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
     user_guid: str
         The target user guid.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
-    user_incomes: UserIncomes
+    user_incomes: UserIncomeGetResponse
     The user income sources.
 
     [STATUS CODE]
@@ -559,11 +513,6 @@ def user_income_set_handler(
     request: UserIncomeSetRequest
         The user income set request.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
     [STATUS CODE]
@@ -593,7 +542,9 @@ def user_income_set_handler(
 
 
 @app.get("/v1/user/{user_guid}/population", status_code=status.HTTP_200_OK)
-def user_population_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserPopulation:
+def user_population_get_handler(
+    user_guid: str, token_claims: TokenClaims = Depends(is_enabled)
+) -> PopulationGetResponse:
     """
     Set User Population.
     [GET] /v1/user/{user_guid}/population
@@ -603,14 +554,9 @@ def user_population_get_handler(user_guid: str, token_claims: TokenClaims = Depe
     user_guid: str
         The target user guid.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
-    user_population: UserPopulation
+    user_population: PopulationGetResponse
         User population.
 
     [STATUS CODE]
@@ -657,11 +603,6 @@ def user_transport_handler(
     request: UserTransportRequest
         The user transport request.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
     user_feature: UserFeature
@@ -704,11 +645,6 @@ def user_state_get_handler(user_guid: str, token_claims: TokenClaims = Depends(i
     user_guid: str
         The target user guid.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
     user_state: UserState
@@ -741,7 +677,7 @@ def user_state_get_handler(user_guid: str, token_claims: TokenClaims = Depends(i
 
 
 @app.get("/v1/user/{user_guid}/stores", status_code=status.HTTP_200_OK)
-def user_stores_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> UserStores:
+def user_stores_get_handler(user_guid: str, token_claims: TokenClaims = Depends(is_enabled)) -> StoresGetResponse:
     """
     Get User Stores
     [GET] /v1/user/{user_guid}/stores
@@ -751,14 +687,9 @@ def user_stores_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
     user_guid: str
         The target user guid.
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
-    user_stores: UserStores
+    user_stores: StoresGetResponse
         User stores.
 
     [STATUS CODE]
@@ -788,19 +719,14 @@ def user_stores_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
 
 
 @app.get("/v1/world", status_code=status.HTTP_200_OK)
-def world_get_handler(token_claims: TokenClaims = Depends(is_admin)) -> WorldStatus:
+def world_get_handler(token_claims: TokenClaims = Depends(is_admin)) -> WorldStatusGetResponse:
     """
     Get World Status
     [GET] /v1/world
 
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
-
     Returns
     -------
-    world_status: WorldStatus
+    world_status: WorldStatusGetResponse
         World status.
 
     [STATUS CODE]
@@ -832,11 +758,6 @@ def action_queue_process_handler(request: ActionQueue, token_claims: TokenClaims
     ----
     request: ActionQueue
         Action queue.
-
-    Header
-    ------
-    api_access_key: str
-        Request Access Key
 
     Returns
     -------

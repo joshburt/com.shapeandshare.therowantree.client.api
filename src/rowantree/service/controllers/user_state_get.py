@@ -1,5 +1,4 @@
 """ User State Get Controller Definition """
-import logging
 
 from starlette import status
 from starlette.exceptions import HTTPException
@@ -60,15 +59,11 @@ class UserStateGetController(AbstractController):
             # Population
             population: int = self.dao.user_population_by_guid_get(user_guid=user_guid)
 
-            logging.debug("checkpoint 1")
-            # Active Feature w/ Details
+            # Active Feature
             active_feature: FeatureType = self.dao.user_active_feature_get(user_guid=user_guid)
-            logging.debug("checkpoint 2")
 
-            logging.debug("checkpoint 3")
-            # Active Feature w/ Details
+            # Active Feature Details
             active_feature_state: UserFeatureState = self.dao.user_active_feature_state_details_get(user_guid=user_guid)
-            logging.debug("checkpoint 4")
 
             # Merchants
             merchants: set[StoreType] = self.dao.user_merchant_transforms_get(user_guid=user_guid)

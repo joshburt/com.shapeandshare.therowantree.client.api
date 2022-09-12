@@ -1,5 +1,5 @@
 """ World Status Get Controller Definition """
-from rowantree.service.sdk import WorldStatusGetResponse
+from rowantree.service.sdk import WorldStatus
 
 from ..controllers.abstract_controller import AbstractController
 
@@ -15,7 +15,7 @@ class WorldStatusGetController(AbstractController):
         Executes the command.
     """
 
-    def execute(self) -> WorldStatusGetResponse:
+    def execute(self) -> WorldStatus:
         """
         Gets the world status.
 
@@ -25,4 +25,4 @@ class WorldStatusGetController(AbstractController):
             The world status.
         """
 
-        return WorldStatusGetResponse(active_users=self.dao.users_active_get())
+        return WorldStatus(active_users=self.dao.users_active_get())

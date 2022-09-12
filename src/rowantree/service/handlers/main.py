@@ -23,7 +23,7 @@ from rowantree.service.sdk import (
     UserIncomeGetResponse,
     UserIncomeSetRequest,
     UserTransportRequest,
-    WorldStatusGetResponse,
+    WorldStatus,
 )
 
 from ..controllers.action_queue_process import ActionQueueProcessController
@@ -761,14 +761,14 @@ def user_stores_get_handler(user_guid: str, token_claims: TokenClaims = Depends(
 
 
 @app.get("/v1/world", status_code=status.HTTP_200_OK)
-def world_get_handler(token_claims: TokenClaims = Depends(is_admin)) -> WorldStatusGetResponse:
+def world_get_handler(token_claims: TokenClaims = Depends(is_admin)) -> WorldStatus:
     """
     Get World Status
     [GET] /v1/world
 
     Returns
     -------
-    world_status: WorldStatusGetResponse
+    world_status: WorldStatus
         World status.
 
     [STATUS CODE]

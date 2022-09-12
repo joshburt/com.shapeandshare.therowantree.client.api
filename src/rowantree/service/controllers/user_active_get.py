@@ -39,7 +39,8 @@ class UserActiveGetController(AbstractController):
         """
 
         try:
-            return self.dao.user_active_state_get(user_guid=user_guid)
+            active: bool = self.dao.user_active_state_get(user_guid=user_guid)
+            return UserActiveGetStatus(active=active)
         except IncorrectRowCountError as error:
             logging.debug("caught: {%s}", str(error))
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unable to find user") from error

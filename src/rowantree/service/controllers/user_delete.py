@@ -1,7 +1,5 @@
 """ User Delete Controller Definition """
 
-from typing import Any
-
 from .abstract_controller import AbstractController
 
 
@@ -16,7 +14,7 @@ class UserDeleteController(AbstractController):
         Executes the command.
     """
 
-    def execute(self, user_guid: str) -> Any:
+    def execute(self, user_guid: str) -> None:
         """
         Deletes a user.
         TODO: the underlying calls need to provide more context on status of this call.

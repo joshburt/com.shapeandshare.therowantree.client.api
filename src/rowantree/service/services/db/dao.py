@@ -188,7 +188,7 @@ class DBDAO:
 
         args = [user_guid]
         try:
-            self._call_proc("createUserByGUID", args, True)
+            self._call_proc("createUserByGUID", args)
         except (IntegrityError, DuplicateKeyError) as error:
             message: str = f"User already exists: {user_guid}, {str(error)}"
             logging.debug(message)
@@ -209,7 +209,7 @@ class DBDAO:
         args: list = [
             user_guid,
         ]
-        self._call_proc("deleteUserByGUID", args, True)
+        self._call_proc("deleteUserByGUID", args)
 
     def user_features_get(self, user_guid: str) -> set[FeatureType]:
         """
@@ -502,9 +502,6 @@ class DBDAO:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
             ) from error
-        # finally:
-        #     if cnx:
-        #         cnx.close()
 
         if debug:
             logging.debug("[DAO] [Stored Proc Call Details] Returning:")

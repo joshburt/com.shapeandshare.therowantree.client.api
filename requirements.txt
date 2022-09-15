@@ -7,4 +7,4 @@ python-jose~=3.3
 rowantree.contracts~=0.12
 rowantree.common.sdk~=0.4
 rowantree.auth.sdk~=0.13
-rowantree.service.sdk~=0.17
+rowantree.service.sdk~=0.18

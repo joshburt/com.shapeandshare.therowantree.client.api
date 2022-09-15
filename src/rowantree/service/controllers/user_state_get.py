@@ -59,11 +59,9 @@ class UserStateGetController(AbstractController):
             # Population
             population: int = self.dao.user_population_by_guid_get(user_guid=user_guid)
 
-            # Active Feature
-            active_feature: FeatureType = self.dao.user_active_feature_get(user_guid=user_guid)
-
-            # Active Feature Details
+            # Active Feature Details and name
             active_feature_state: UserFeatureState = self.dao.user_active_feature_state_details_get(user_guid=user_guid)
+            active_feature_state.name = self.dao.user_active_feature_get(user_guid=user_guid)
 
             # Merchants
             merchants: set[StoreType] = self.dao.user_merchant_transforms_get(user_guid=user_guid)
@@ -79,7 +77,6 @@ class UserStateGetController(AbstractController):
             stores=stores,
             incomes=incomes,
             features=features,
-            active_feature=active_feature,
             active_feature_state=active_feature_state,
             population=population,
             merchants=merchants,

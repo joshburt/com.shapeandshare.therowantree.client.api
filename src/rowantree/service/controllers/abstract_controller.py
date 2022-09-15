@@ -3,7 +3,7 @@
 from abc import abstractmethod
 from typing import Any, Optional
 
-from rowantree.common.sdk import BaseModel
+from rowantree.contracts import BaseModel
 
 from ..services.db.dao import DBDAO
 

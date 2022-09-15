@@ -11,9 +11,9 @@ from mysql.connector.pooling import MySQLConnectionPool, PooledMySQLConnection
 from starlette import status
 from starlette.exceptions import HTTPException
 
-from rowantree.common.sdk import BaseModel
 from rowantree.contracts import (
     ActionQueue,
+    BaseModel,
     FeatureDetails,
     FeatureType,
     StoreType,

@@ -20,7 +20,6 @@ from rowantree.contracts import (
     User,
     UserEvent,
     UserFeatureState,
-    UserIncome,
     UserNotification,
     UserStore,
 )
@@ -247,7 +246,7 @@ class DBDAO(BaseModel):
 
         return features
 
-    def user_income_get(self, user_guid: str) -> dict[StoreType, UserIncome]:
+    def user_income_get(self, user_guid: str) -> dict[StoreType, UserStore]:
         """
         Get user income sources
         # TODO: This can not tell if there are no stores, or if the user just doesn't exist.
@@ -259,18 +258,17 @@ class DBDAO(BaseModel):
 
         Returns
         -------
-        user_incomes: UserIncomes
-            User incomes object.
+        user_incomes: dict[StoreType, UserStore]
         """
 
-        income_sources: dict[StoreType, UserIncome] = {}
+        income_sources: dict[StoreType, UserStore] = {}
 
         args: list[str] = [
             user_guid,
         ]
         rows: list[Tuple[int, str, Optional[str]]] = self._call_proc("getUserIncomeByGUID", args)
         for row in rows:
-            income_sources[StoreType(row[1])] = UserIncome(amount=row[0], name=StoreType(row[1]), description=row[2])
+            income_sources[StoreType(row[1])] = UserStore(amount=row[0], name=StoreType(row[1]), description=row[2])
         return income_sources
 
     def user_income_set(self, user_guid: str, transaction: UserIncomeSetRequest) -> None:

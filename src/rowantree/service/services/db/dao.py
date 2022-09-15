@@ -395,7 +395,7 @@ class DBDAO(BaseModel):
             stores[StoreType(row[0])] = UserStore(name=StoreType(row[0]), description=row[1], amount=row[2])
         return stores
 
-    def user_transport(self, user_guid: str, location: str) -> FeatureType:
+    def user_transport(self, user_guid: str, location: str) -> UserFeatureState:
         """
         Perform User Transport.
 
@@ -408,8 +408,8 @@ class DBDAO(BaseModel):
 
         Returns
         -------
-        user_feature: UserFeature
-            The active user feature.
+        user_feature: UserFeatureState
+            The active user feature state.
         """
 
         args: list = [user_guid, location]
@@ -419,7 +419,7 @@ class DBDAO(BaseModel):
             message: str = f"Result count was not exactly one. Received: {rows}"
             logging.debug(message)
             raise IncorrectRowCountError(message)
-        return FeatureType(rows[0][0])
+        return UserFeatureState(details=rows[0][0], description=rows[0][1])
 
     # Utility functions
 

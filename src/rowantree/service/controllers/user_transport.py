@@ -4,7 +4,7 @@ import logging
 from starlette import status
 from starlette.exceptions import HTTPException
 
-from rowantree.contracts import FeatureType
+from rowantree.contracts import FeatureType, UserFeatureState
 from rowantree.service.sdk import ActiveFeatureResponse, UserTransportRequest
 
 from ..services.db.incorrect_row_count_error import IncorrectRowCountError
@@ -35,13 +35,13 @@ class UserTransportController(AbstractController):
 
         Returns
         -------
-        user_feature: ActiveFeatureResponse
+        feature_state_response: ActiveFeatureResponse
             The user's new active feature.
         """
 
         try:
-            feature: FeatureType = self.dao.user_transport(user_guid=user_guid, location=request.location)
-            return ActiveFeatureResponse(active_feature=feature)
+            feature_state: UserFeatureState = self.dao.user_transport(user_guid=user_guid, location=request.location)
+            return ActiveFeatureResponse(feature_state=feature_state)
         except IncorrectRowCountError as error:
             logging.debug("caught: {%s}", str(error))
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unable to find user") from error

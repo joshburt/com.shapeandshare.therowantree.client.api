@@ -27,6 +27,7 @@ from rowantree.contracts import (
 from rowantree.service.sdk import UserIncomeSetRequest
 
 from ...contracts.duplicate_key_error import DuplicateKeyError
+from ...contracts.sql_exception_error import SqlExceptionError
 from .incorrect_row_count_error import IncorrectRowCountError
 
 
@@ -413,7 +414,7 @@ class DBDAO(BaseModel):
         """
 
         args: list = [user_guid, location]
-        rows: list[Tuple[str, Optional[str]]] = self._call_proc("transportUserByGUID", args)
+        rows: list[Tuple[str, Optional[str]]] = self._call_proc("transportUserByGUID", args, True)
         if len(rows) != 1:
             # User did not exist (received an empty tuple)
             message: str = f"Result count was not exactly one. Received: {rows}"
@@ -481,16 +482,17 @@ class DBDAO(BaseModel):
             logging.error(str(error))
             if cnx:
                 cnx.close()
+            # pylint: disable=no-else-raise
             if error.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 logging.error("Something is wrong with your user name or password")
+                raise SqlExceptionError("Bad username or password") from error
             elif error.errno == errorcode.ER_BAD_DB_ERROR:
                 logging.error("Database does not exist")
+                raise SqlExceptionError("Database does not exist") from error
             elif error.errno == errorcode.ER_DUP_ENTRY:
                 logging.error("Duplicate key")
                 raise DuplicateKeyError(str(error)) from error
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error"
-            ) from error
+            raise SqlExceptionError(f"Unhandled SQL Exception: {str(error)}") from error
         except Exception as error:
             logging.error("error")
             # All other uncaught exception types

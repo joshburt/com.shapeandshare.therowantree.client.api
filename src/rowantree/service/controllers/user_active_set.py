@@ -2,7 +2,6 @@
 
 from rowantree.service.sdk import UserActiveGetStatus
 
-from ..services.db.dao import DBDAO
 from .abstract_controller import AbstractController
 
 
@@ -16,9 +15,6 @@ class UserActiveSetController(AbstractController):
     execute(self, user_guid: str, request: UserActive) -> UserActive
         Executes the command.
     """
-
-    def __init__(self, dao: DBDAO):
-        super().__init__(dao=dao)
 
     def execute(self, user_guid: str, request: UserActiveGetStatus) -> None:
         """

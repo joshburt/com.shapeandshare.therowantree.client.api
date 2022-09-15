@@ -1,12 +1,14 @@
 """ Abstract Controller Definition """
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Optional
+
+from rowantree.contracts import BaseModel
 
 from ..services.db.dao import DBDAO
 
 
-class AbstractController(ABC):
+class AbstractController(BaseModel):
     """
     Abstract Controller
 
@@ -17,9 +19,6 @@ class AbstractController(ABC):
     """
 
     dao: DBDAO
-
-    def __init__(self, dao: DBDAO):
-        self.dao = dao
 
     @abstractmethod
     def execute(self, *args, **kwargs) -> Optional[Any]:

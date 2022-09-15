@@ -7,7 +7,6 @@ from starlette.exceptions import HTTPException
 
 from rowantree.service.sdk import UserActiveGetStatus
 
-from ..services.db.dao import DBDAO
 from ..services.db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController
 
@@ -17,9 +16,6 @@ class UserActiveGetController(AbstractController):
     User Active Get Controller
     Gets the user active state.
     """
-
-    def __init__(self, dao: DBDAO):
-        super().__init__(dao=dao)
 
     def execute(self, user_guid: str) -> UserActiveGetStatus:
         """

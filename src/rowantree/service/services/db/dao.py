@@ -11,6 +11,7 @@ from mysql.connector.pooling import MySQLConnectionPool, PooledMySQLConnection
 from starlette import status
 from starlette.exceptions import HTTPException
 
+from rowantree.common.sdk import BaseModel
 from rowantree.contracts import (
     ActionQueue,
     FeatureDetails,
@@ -29,20 +30,17 @@ from ...contracts.duplicate_key_error import DuplicateKeyError
 from .incorrect_row_count_error import IncorrectRowCountError
 
 
-class DBDAO:
+class DBDAO(BaseModel):
     """
     Database DAO
 
     Attributes
     ----------
-    cnxpool: Any
+    cnxpool: MySQLConnectionPool
         MySQL Connection Pool
     """
 
     cnxpool: MySQLConnectionPool
-
-    def __init__(self, cnxpool: MySQLConnectionPool):
-        self.cnxpool = cnxpool
 
     def merchant_transform_perform(self, user_guid: str, store_name: str) -> None:
         """

@@ -3,7 +3,16 @@
 from starlette import status
 from starlette.exceptions import HTTPException
 
-from rowantree.contracts import FeatureType, StoreType, UserFeatureState, UserNotification, UserState, UserStore
+from rowantree.contracts import (
+    FeatureType,
+    IncomeSourceType,
+    StoreType,
+    UserFeatureState,
+    UserIncome,
+    UserNotification,
+    UserState,
+    UserStore,
+)
 
 from ..services.db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController
@@ -43,7 +52,7 @@ class UserStateGetController(AbstractController):
             stores: dict[StoreType, UserStore] = self.dao.user_stores_get(user_guid=user_guid)
 
             # User Income
-            incomes: dict[StoreType, UserStore] = self.dao.user_income_get(user_guid=user_guid)
+            incomes: dict[IncomeSourceType, UserIncome] = self.dao.user_income_get(user_guid=user_guid)
 
             # Features
             features: set[FeatureType] = self.dao.user_features_get(user_guid=user_guid)

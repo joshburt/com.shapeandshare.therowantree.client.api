@@ -14,12 +14,14 @@ from starlette.exceptions import HTTPException
 from rowantree.contracts import (
     ActionQueue,
     BaseModel,
-    FeatureDetails,
+    FeatureDetailType,
     FeatureType,
+    IncomeSourceType,
     StoreType,
     User,
     UserEvent,
     UserFeatureState,
+    UserIncome,
     UserNotification,
     UserStore,
 )
@@ -108,7 +110,7 @@ class DBDAO(BaseModel):
             logging.debug(message)
             raise IncorrectRowCountError(message)
 
-        return UserFeatureState(details=FeatureDetails(rows[0][0]), description=rows[0][1])
+        return UserFeatureState(details=FeatureDetailType(rows[0][0]), description=rows[0][1])
 
     def users_active_get(self) -> set[str]:
         """
@@ -246,7 +248,7 @@ class DBDAO(BaseModel):
 
         return features
 
-    def user_income_get(self, user_guid: str) -> dict[StoreType, UserStore]:
+    def user_income_get(self, user_guid: str) -> dict[IncomeSourceType, UserIncome]:
         """
         Get user income sources
         # TODO: This can not tell if there are no stores, or if the user just doesn't exist.
@@ -258,17 +260,19 @@ class DBDAO(BaseModel):
 
         Returns
         -------
-        user_incomes: dict[StoreType, UserStore]
+        user_incomes: dict[IncomeSourceType, UserIncome]
         """
 
-        income_sources: dict[StoreType, UserStore] = {}
+        income_sources: dict[IncomeSourceType, UserIncome] = {}
 
         args: list[str] = [
             user_guid,
         ]
         rows: list[Tuple[int, str, Optional[str]]] = self._call_proc("getUserIncomeByGUID", args)
         for row in rows:
-            income_sources[StoreType(row[1])] = UserStore(amount=row[0], name=StoreType(row[1]), description=row[2])
+            income_sources[IncomeSourceType(row[1])] = UserIncome(
+                amount=row[0], name=IncomeSourceType(row[1]), description=row[2]
+            )
         return income_sources
 
     def user_income_set(self, user_guid: str, transaction: UserIncomeSetRequest) -> None:

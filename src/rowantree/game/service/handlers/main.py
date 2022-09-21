@@ -12,7 +12,7 @@ from rowantree.auth.sdk.common.depends import is_admin, is_enabled
 from rowantree.auth.sdk.contracts.dto.token_claims import TokenClaims
 from rowantree.common.sdk import demand_env_var
 from rowantree.contracts import ActionQueue, User, UserFeatureState, UserState
-from rowantree.service.sdk import (
+from rowantree.game.service.sdk import (
     FeaturesGetResponse,
     MerchantTransformRequest,
     MerchantTransformsGetResponse,

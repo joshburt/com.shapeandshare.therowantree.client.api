@@ -5,7 +5,7 @@ from starlette import status
 from starlette.exceptions import HTTPException
 
 from rowantree.contracts import UserFeatureState
-from rowantree.service.sdk import UserTransportRequest
+from rowantree.game.service.sdk import UserTransportRequest
 
 from ..contracts.sql_exception_error import SqlExceptionError
 from ..services.db.incorrect_row_count_error import IncorrectRowCountError

@@ -46,3 +46,5 @@ logs/
 venv/
 .vs/
 .coverage
+src/rowantree.game.service.egg-info/
+dist/

@@ -1,6 +1,6 @@
 """ User Active Set Controller Definition """
 
-from rowantree.service.sdk import UserActiveGetStatus
+from rowantree.game.service.sdk import UserActiveGetStatus
 
 from .abstract_controller import AbstractController
 

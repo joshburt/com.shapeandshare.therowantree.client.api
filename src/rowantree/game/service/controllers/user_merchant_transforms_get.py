@@ -1,6 +1,6 @@
 """ User Merchant Transforms Get Controller Definition """
 from rowantree.contracts import StoreType
-from rowantree.service.sdk import MerchantTransformsGetResponse
+from rowantree.game.service.sdk import MerchantTransformsGetResponse
 
 from .abstract_controller import AbstractController
 

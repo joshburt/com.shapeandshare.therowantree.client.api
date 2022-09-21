@@ -1,6 +1,6 @@
 """ Merchant Transform Perform Controller Definition """
 
-from rowantree.service.sdk import MerchantTransformRequest
+from rowantree.game.service.sdk import MerchantTransformRequest
 
 from .abstract_controller import AbstractController
 

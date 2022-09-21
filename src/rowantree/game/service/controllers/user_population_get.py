@@ -4,7 +4,7 @@ import logging
 from starlette import status
 from starlette.exceptions import HTTPException
 
-from rowantree.service.sdk import PopulationGetResponse
+from rowantree.game.service.sdk import PopulationGetResponse
 
 from ..services.db.incorrect_row_count_error import IncorrectRowCountError
 from .abstract_controller import AbstractController

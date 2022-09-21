@@ -1,15 +1,15 @@
-# The Rowan Tree Service Layer
+# The Rowan Tree Game Service Layer
 
 Overview
 --------
-The Rowan Tree Service Layer
+The Rowan Tree Game Service Layer
 
 Deployment
 ----------
 **Start the service (development only):**
 ```
-uvicorn src.rowantree.service.handlers.main:app --reload --port 8000 --env-file env/.env.offline
-uvicorn rowantree.service.handlers.main:app --reload --port 8000 --env-file env/.env.offline
+uvicorn src.rowantree.game.service.handlers.main:app --reload --port 8000 --env-file env/.env.offline
+uvicorn rowantree.game.service.handlers.main:app --reload --port 8000 --env-file env/.env.offline
 ```
 
 Consumption

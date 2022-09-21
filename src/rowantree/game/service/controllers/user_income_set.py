@@ -1,6 +1,6 @@
 """ User Income Set Controller Definition """
 
-from rowantree.service.sdk import UserIncomeSetRequest
+from rowantree.game.service.sdk import UserIncomeSetRequest
 
 from ..controllers.abstract_controller import AbstractController
 

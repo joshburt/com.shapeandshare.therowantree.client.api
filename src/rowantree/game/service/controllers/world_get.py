@@ -1,5 +1,5 @@
 """ World Status Get Controller Definition """
-from rowantree.service.sdk import WorldStatus
+from rowantree.game.service.sdk import WorldStatus
 
 from ..controllers.abstract_controller import AbstractController
 

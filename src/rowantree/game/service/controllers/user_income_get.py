@@ -1,6 +1,6 @@
 """ User Income Get Controller Definition """
 from rowantree.contracts import IncomeSourceType, UserIncome
-from rowantree.service.sdk import UserIncomeGetResponse
+from rowantree.game.service.sdk import UserIncomeGetResponse
 
 from .abstract_controller import AbstractController
 

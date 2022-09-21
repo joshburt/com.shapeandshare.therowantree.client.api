@@ -1,6 +1,6 @@
 """ User Stores Get Controller Definition """
 from rowantree.contracts import StoreType, UserStore
-from rowantree.service.sdk import StoresGetResponse
+from rowantree.game.service.sdk import StoresGetResponse
 
 from .abstract_controller import AbstractController
 

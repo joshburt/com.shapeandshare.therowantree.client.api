@@ -25,7 +25,7 @@ from rowantree.contracts import (
     UserNotification,
     UserStore,
 )
-from rowantree.service.sdk import UserIncomeSetRequest
+from rowantree.game.service.sdk import UserIncomeSetRequest
 
 from ...contracts.duplicate_key_error import DuplicateKeyError
 from ...contracts.sql_exception_error import SqlExceptionError
